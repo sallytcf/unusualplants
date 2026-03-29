@@ -311,7 +311,6 @@ header .title-area p  { font-size: 0.75rem; opacity: 0.82; margin-top: 1px; }
 </head>
 <body>
 
-<!-- HEADER -->
 <header>
   <div class="title-area">
     <h1>🌿 Unusual Plants Explorer</h1>
@@ -323,23 +322,19 @@ header .title-area p  { font-size: 0.75rem; opacity: 0.82; margin-top: 1px; }
   </div>
 </header>
 
-<!-- TABS -->
 <div class="tabs">
   <button class="tab active" onclick="switchTab('chat')" id="tab-chat">💬 Plant Chat</button>
   <button class="tab" onclick="switchTab('invent')" id="tab-invent">🧪 Invent a Plant</button>
   <button class="tab" onclick="switchTab('notes')" id="tab-notes">📓 My Notes</button>
 </div>
 
-<!-- MAIN -->
 <div class="main">
 
-  <!-- SIDEBAR -->
   <div class="sidebar" id="sidebar">
     <div class="sidebar-title">🌱 Plant Explorer</div>
     <div id="plant-cards-container"></div>
   </div>
 
-  <!-- CHAT -->
   <div class="chat-wrap" id="chat-panel">
     <div class="chat-msgs" id="chat-msgs"></div>
 
@@ -360,7 +355,6 @@ header .title-area p  { font-size: 0.75rem; opacity: 0.82; margin-top: 1px; }
     </div>
   </div>
 
-  <!-- INVENT PANEL -->
   <div class="invent-panel" id="invent-panel">
     <div class="invent-hero">
       <h2>🧪 Design Your Own Unusual Plant!</h2>
@@ -434,7 +428,6 @@ header .title-area p  { font-size: 0.75rem; opacity: 0.82; margin-top: 1px; }
       <div class="sci-notes"><b>🔬 Botanist's Notes:</b> <span id="pc-notes"></span></div>
       <div style="margin-top:12px;font-size:0.78rem;color:#888;">Created by: <span id="pc-creator"></span></div>
 
-      <!-- AI IMAGE GENERATION -->
       <div class="ai-img-section">
         <h4>🎨 Generate an AI Picture of Your Plant</h4>
         <p>Click the button below and AI will draw what your plant might look like — based on your description! (Requires internet connection)</p>
@@ -446,9 +439,7 @@ header .title-area p  { font-size: 0.75rem; opacity: 0.82; margin-top: 1px; }
             <div class="ai-spinner"></div>
             <p>Creating your plant… this takes about 10 seconds!</p>
           </div>
-          <img id="ai-plant-img" src="" alt="AI generated plant" style="display:none"
-               onload="document.getElementById('ai-loading').style.display='none';this.style.display='block'"
-               onerror="document.getElementById('ai-loading').innerHTML='<p style=\'color:#c00\'>Could not generate image — please check internet connection and try again.</p>'">
+          <img id="ai-plant-img" alt="AI generated plant" style="display:none">
         </div>
         <div id="ai-img-caption" class="ai-img-caption" style="display:none"></div>
         <button class="regen-btn" id="regen-btn" onclick="generateAIImage()" style="display:none">🔄 Generate a different version</button>
@@ -458,7 +449,6 @@ header .title-area p  { font-size: 0.75rem; opacity: 0.82; margin-top: 1px; }
     </div>
   </div>
 
-  <!-- NOTES PANEL -->
   <div class="notes-panel" id="notes-panel">
     <div class="notes-topbar">
       <span>📓 Record your discoveries here — one section per plant!</span>
@@ -467,9 +457,7 @@ header .title-area p  { font-size: 0.75rem; opacity: 0.82; margin-top: 1px; }
     <textarea class="notes-area" id="notes-area" placeholder="Plant Name: _______________________&#10;&#10;Where it lives: _______________________&#10;&#10;How it survives (special adaptation): _______________________&#10;&#10;What it eats / how it gets energy: _______________________&#10;&#10;Most interesting fact: _______________________&#10;&#10;A question I still have: _______________________&#10;&#10;────────────────────────&#10;&#10;Plant Name: _______________________&#10;&#10;Where it lives: _______________________&#10;&#10;How it survives (special adaptation): _______________________&#10;&#10;What it eats / how it gets energy: _______________________&#10;&#10;Most interesting fact: _______________________&#10;&#10;A question I still have: _______________________"></textarea>
   </div>
 
-</div><!-- end .main -->
-
-<script>
+</div><script>
 // ╔══════════════════════════════════════════╗
 // ║          PLANT KNOWLEDGE BASE            ║
 // ╚══════════════════════════════════════════╝
@@ -911,13 +899,9 @@ function generateAIImage() {
   loading.style.display = 'flex';
   loading.innerHTML = '<div class="ai-spinner"></div><p>Creating your plant… this takes about 10–15 seconds!</p>';
   img.style.display = 'none';
-  img.src = '';
   caption.style.display = 'none';
   regenBtn.style.display = 'none';
   genBtn.disabled = true;
-
-  // Set the src — onload/onerror handlers on the img element do the rest
-  img.src = url;
 
   img.onload = () => {
     loading.style.display = 'none';
@@ -927,11 +911,15 @@ function generateAIImage() {
     regenBtn.style.display = 'inline-block';
     genBtn.disabled = false;
   };
+
   img.onerror = () => {
     loading.innerHTML = '<p style="color:#c00;padding:20px;text-align:center">Could not generate image.<br>Please check your internet connection and try again.</p>';
     genBtn.disabled = false;
     regenBtn.style.display = 'inline-block';
   };
+
+  // Set the src LAST to trigger the network request after event listeners are bound
+  img.src = url;
 }
 
 function clearNotes() {
