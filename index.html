@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌿 Unusual Plants Explorer</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --green: #2d6a4f;
+  --mid-green: #40916c;
+  --light-green: #52b788;
+  --pale-green: #d8f3dc;
+  --amber: #e76f51;
+  --blue: #3a86ff;
+  --bubble-bot: #f0faf3;
+  --bubble-user: #e8f0ff;
+  --shadow: 0 2px 10px rgba(0,0,0,0.10);
+}
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: #eef6f0; color: #1a2e1e;
+  height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+}
+
+/* ── INTRO PAGE ── */
+#intro-page {
+  position: fixed; inset: 0; z-index: 9999;
+  background: linear-gradient(160deg, #1b4332 0%, #2d6a4f 40%, #40916c 100%);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; overflow-y: auto;
+}
+.intro-card {
+  background: white; border-radius: 20px; max-width: 640px; width: 100%;
+  padding: 32px 36px; box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+}
+.intro-logo { text-align: center; margin-bottom: 6px; font-size: 2.8rem; }
+.intro-title { text-align: center; color: var(--green); font-size: 1.5rem; font-weight: 800; margin-bottom: 4px; }
+.intro-sub   { text-align: center; color: #777; font-size: 0.82rem; margin-bottom: 22px; }
+.lesson-cards { display: flex; gap: 12px; margin-bottom: 24px; }
+.lesson-card {
+  flex: 1; border-radius: 12px; padding: 14px 16px;
+  border-left: 5px solid var(--light-green); background: #f4fbf6;
+}
+.lesson-card.l2 { border-left-color: #e76f51; background: #fff8f5; }
+.lesson-card h3 { font-size: 0.82rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.6px; color: var(--green); margin-bottom: 6px; }
+.lesson-card.l2 h3 { color: var(--amber); }
+.lesson-card p  { font-size: 0.82rem; color: #444; line-height: 1.55; }
+.intro-form label { display: block; font-size: 0.8rem; font-weight: 600; color: #555; margin-bottom: 4px; }
+.intro-form input, .intro-form select {
+  width: 100%; border: 2px solid #c8dcc9; border-radius: 10px;
+  padding: 10px 14px; font-size: 0.9rem; outline: none; margin-bottom: 14px;
+  font-family: inherit; transition: border-color 0.2s;
+}
+.intro-form input:focus, .intro-form select:focus { border-color: var(--light-green); }
+.intro-start-btn {
+  width: 100%; background: linear-gradient(135deg, var(--green), var(--light-green));
+  color: white; border: none; border-radius: 12px; padding: 14px;
+  font-size: 1rem; font-weight: 700; cursor: pointer; letter-spacing: 0.3px;
+  box-shadow: 0 6px 18px rgba(45,106,79,0.35); transition: opacity 0.2s;
+}
+.intro-start-btn:hover { opacity: 0.88; }
+.intro-error { color: #c00; font-size: 0.8rem; margin-bottom: 10px; display: none; }
+
+/* ── HEADER ── */
+header {
+  background: linear-gradient(135deg, var(--green) 0%, var(--mid-green) 60%, var(--light-green) 100%);
+  color: white; padding: 10px 18px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18); flex-shrink: 0; gap: 10px;
+}
+.header-info { display: flex; align-items: center; gap: 12px; }
+.header-info h1 { font-size: 1.1rem; font-weight: 700; }
+.header-info p  { font-size: 0.72rem; opacity: 0.82; }
+.student-badge {
+  background: rgba(255,255,255,0.2); border-radius: 20px; padding: 5px 14px;
+  font-size: 0.8rem; display: flex; align-items: center; gap: 6px;
+}
+.student-badge span { font-weight: 600; }
+
+/* ── TABS ── */
+.tabs { display: flex; background: white; border-bottom: 2px solid var(--pale-green); flex-shrink: 0; }
+.tab {
+  padding: 10px 18px; border: none; background: none; cursor: pointer;
+  font-size: 0.87rem; color: #666; border-bottom: 3px solid transparent;
+  margin-bottom: -2px; transition: all 0.2s; display: flex; align-items: center; gap: 5px;
+}
+.tab:hover  { color: var(--green); background: var(--pale-green); }
+.tab.active { color: var(--green); border-bottom-color: var(--green); font-weight: 600; }
+
+/* ── LAYOUT ── */
+.main { display: flex; flex: 1; overflow: hidden; }
+.sidebar {
+  width: 200px; background: white; border-right: 1px solid #dde8de;
+  overflow-y: auto; flex-shrink: 0; padding: 12px 10px;
+}
+.sidebar-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #999; margin-bottom: 10px; }
+
+/* ── PLANT CARDS ── */
+.plant-card {
+  border-radius: 10px; overflow: hidden; margin-bottom: 9px; cursor: pointer;
+  border: 2px solid transparent; transition: all 0.18s; background: #f4fbf6;
+}
+.plant-card:hover  { border-color: var(--light-green); transform: translateY(-2px); box-shadow: var(--shadow); }
+.plant-card.active { border-color: var(--green); box-shadow: 0 0 0 3px rgba(45,106,79,0.12); }
+.card-img-wrap { position: relative; width: 100%; height: 80px; overflow: hidden; background: #e8f5e9; }
+.card-img-wrap img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; opacity: 0; transition: opacity 0.3s;
+}
+.card-placeholder {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 2rem; background: linear-gradient(135deg, #b7e4c7, #d4f1f4);
+}
+.card-info { padding: 6px 8px; }
+.card-name { font-size: 0.79rem; font-weight: 600; color: var(--green); }
+.card-tag  { font-size: 0.68rem; color: #777; margin-top: 1px; }
+
+/* ── CHAT ── */
+.chat-wrap { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.chat-msgs { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 11px; }
+.msg { display: flex; gap: 9px; align-items: flex-start; max-width: 82%; animation: fadein 0.28s ease; }
+.msg.user { align-self: flex-end; flex-direction: row-reverse; }
+@keyframes fadein { from { opacity:0; transform:translateY(7px); } to { opacity:1; } }
+.avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0; box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+.bot-av  { background: linear-gradient(135deg, var(--green), var(--light-green)); color: white; }
+.user-av { background: linear-gradient(135deg, var(--blue), #74b9ff); color: white; font-size: 0.8rem; font-weight: 700; }
+.bubble {
+  background: var(--bubble-bot); border-radius: 16px 16px 16px 4px;
+  padding: 10px 13px; font-size: 0.875rem; line-height: 1.55;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07); max-width: 100%;
+}
+.msg.user .bubble { background: var(--bubble-user); border-radius: 16px 16px 4px 16px; }
+.bubble b, .bubble strong { color: var(--green); }
+.plant-img { width: 100%; max-width: 260px; border-radius: 10px; margin-top: 9px; display: block; box-shadow: var(--shadow); }
+.fact-box {
+  background: #fff8e1; border-left: 3px solid var(--amber);
+  padding: 7px 10px; border-radius: 0 8px 8px 0; margin-top: 8px;
+  font-size: 0.82rem; color: #4a3000;
+}
+.fact-label { font-size: 0.68rem; font-weight: 700; color: var(--amber); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+
+/* ── CHIPS / INPUT ── */
+.prompt-area { border-top: 1px solid #dde8de; background: white; padding: 7px 12px; }
+.prompt-area p { font-size: 0.72rem; color: #999; margin-bottom: 5px; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.chip {
+  background: var(--pale-green); border: 1px solid #95d5b2; color: var(--green);
+  border-radius: 20px; padding: 4px 11px; font-size: 0.75rem; cursor: pointer; transition: all 0.15s;
+}
+.chip:hover { background: var(--light-green); color: white; border-color: var(--light-green); }
+.input-bar { background: white; padding: 10px 12px; border-top: 1px solid #dde8de; display: flex; gap: 8px; align-items: center; }
+.input-bar input {
+  flex: 1; border: 1.5px solid #c8dcc9; border-radius: 24px;
+  padding: 9px 16px; font-size: 0.88rem; outline: none; transition: border-color 0.2s;
+}
+.input-bar input:focus { border-color: var(--light-green); }
+.send-btn {
+  background: var(--green); color: white; border: none; border-radius: 50%;
+  width: 38px; height: 38px; cursor: pointer; font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s; flex-shrink: 0;
+}
+.send-btn:hover { background: var(--light-green); }
+.chat-actions { padding: 5px 16px 8px; display: flex; gap: 8px; justify-content: flex-end; }
+.copy-chat-btn {
+  background: #f0f7f0; color: #2e7d32; border: 1.5px solid #a5d6a7;
+  border-radius: 18px; padding: 4px 12px; font-size: 0.76rem; cursor: pointer; transition: all 0.2s;
+}
+.copy-chat-btn:hover { background: #c8e6c9; }
+.copy-chat-btn.copied { background: var(--green); color: white; border-color: var(--green); }
+
+/* ── INVENT PANEL ── */
+.invent-panel { display: none; flex: 1; overflow-y: auto; padding: 18px 22px; }
+.invent-panel.active { display: block; }
+.invent-hero { background: linear-gradient(135deg, #e8f5e9, #e3f2fd); border-radius: 14px; padding: 16px 18px; margin-bottom: 18px; }
+.invent-hero h2 { color: var(--green); font-size: 1.1rem; margin-bottom: 5px; }
+.invent-hero p  { font-size: 0.85rem; color: #555; line-height: 1.5; }
+.inv-step {
+  background: white; border-radius: 12px; padding: 14px 16px; margin-bottom: 12px;
+  border-left: 4px solid var(--light-green); box-shadow: 0 1px 5px rgba(0,0,0,0.06);
+}
+.step-badge {
+  background: var(--green); color: white; border-radius: 50%;
+  width: 22px; height: 22px; display: inline-flex; align-items: center;
+  justify-content: center; font-size: 0.72rem; font-weight: 700; margin-right: 7px;
+}
+.inv-step h3    { display: inline; font-size: 0.92rem; color: var(--green); }
+.inv-step .hint { font-size: 0.76rem; color: #999; margin: 5px 0 9px 29px; font-style: italic; }
+.inv-step input, .inv-step textarea {
+  width: 100%; border: 1.5px solid #d0dcd1; border-radius: 8px;
+  padding: 8px 11px; font-size: 0.85rem; font-family: inherit; outline: none; transition: border-color 0.2s;
+}
+.inv-step input:focus, .inv-step textarea:focus { border-color: var(--light-green); }
+.inv-step textarea { min-height: 65px; resize: vertical; }
+.inv-step input + input { margin-top: 7px; }
+.trait-grid { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.trait {
+  background: #f0f4f0; border: 1.5px solid #ccc; border-radius: 20px;
+  padding: 4px 10px; font-size: 0.76rem; cursor: pointer; transition: all 0.15s; user-select: none;
+}
+.trait.on { background: var(--pale-green); border-color: var(--light-green); color: var(--green); font-weight: 600; }
+.gen-btn {
+  background: linear-gradient(135deg, var(--green), var(--light-green));
+  color: white; border: none; padding: 13px; border-radius: 30px; font-size: 0.95rem;
+  font-weight: 600; cursor: pointer; width: 100%; margin-top: 8px;
+  box-shadow: 0 4px 14px rgba(45,106,79,0.28); transition: opacity 0.2s;
+}
+.gen-btn:hover { opacity: 0.88; }
+
+/* ── PROFILE CARD ── */
+.profile-card {
+  display: none; background: white; border-radius: 16px; padding: 20px;
+  margin-top: 18px; box-shadow: 0 4px 22px rgba(0,0,0,0.1); border: 2px solid var(--pale-green);
+}
+.profile-card.show { display: block; }
+.profile-card .big-emoji { text-align: center; font-size: 3rem; margin-bottom: 8px; }
+.profile-card h2   { color: var(--green); font-size: 1.3rem; }
+.profile-card .sci { color: #888; font-style: italic; font-size: 0.82rem; margin-bottom: 14px; }
+.profile-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: flex-start; }
+.p-label {
+  background: var(--pale-green); color: var(--green); font-size: 0.68rem; font-weight: 700;
+  padding: 3px 8px; border-radius: 10px; white-space: nowrap; margin-top: 2px;
+  text-transform: uppercase; letter-spacing: 0.4px;
+}
+.p-val { font-size: 0.86rem; line-height: 1.5; }
+.sci-notes { background: #f8fdf8; border-radius: 10px; padding: 10px 12px; margin-top: 12px; font-size: 0.8rem; color: #555; line-height: 1.5; }
+.sci-notes b { color: var(--green); }
+.print-btn { background: var(--amber); color: white; border: none; padding: 9px 20px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; margin-top: 12px; }
+
+/* ── AI IMAGE ── */
+.ai-img-section { margin-top: 16px; border-top: 2px dashed var(--pale-green); padding-top: 14px; }
+.ai-img-section h4 { color: var(--green); font-size: 0.88rem; margin-bottom: 6px; }
+.ai-img-section p  { font-size: 0.78rem; color: #666; margin-bottom: 10px; line-height: 1.4; }
+.ai-gen-btn {
+  background: linear-gradient(135deg, #7b2ff7, #f107a3);
+  color: white; border: none; padding: 10px 20px; border-radius: 24px;
+  font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+  display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+}
+.ai-gen-btn:hover { opacity: 0.88; }
+.ai-gen-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.ai-img-frame { width: 100%; border-radius: 12px; overflow: hidden; background: #f3f3f3; min-height: 200px; display: none; position: relative; }
+.ai-img-frame.visible { display: block; }
+.ai-img-frame img { width: 100%; display: block; border-radius: 12px; }
+.ai-loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: #f9f0ff; }
+.ai-spinner { width: 36px; height: 36px; border: 4px solid #e0c6ff; border-top-color: #7b2ff7; border-radius: 50%; animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.ai-loading p { font-size: 0.8rem; color: #7b2ff7; font-weight: 500; }
+.ai-img-caption { font-size: 0.72rem; color: #888; margin-top: 6px; text-align: center; font-style: italic; }
+.regen-btn { background: none; border: 1px solid #c9a8f5; color: #7b2ff7; border-radius: 16px; padding: 5px 14px; font-size: 0.76rem; cursor: pointer; margin-top: 8px; }
+.regen-btn:hover { background: #f3e8ff; }
+
+/* ── PROGRESS DOTS ── */
+.card-progress { display:flex; gap:3px; padding:3px 8px 6px; align-items:center; }
+.prog-dot { width:18px; height:18px; border-radius:50%; background:#e0e0e0; color:#bbb; font-size:0.55rem; font-weight:800; display:flex; align-items:center; justify-content:center; transition:all 0.35s; }
+.prog-dot.done { background:var(--green); color:white; transform:scale(1.1); }
+
+/* ── VOCAB TAB PANEL ── */
+.vocab-panel { display:none; flex:1; overflow-y:auto; padding:18px 22px; }
+.vocab-panel.active { display:block; }
+.vocab-hero { background:linear-gradient(135deg,#e8f5e9,#e3f2fd); border-radius:14px; padding:16px 18px; margin-bottom:18px; }
+.vocab-hero-title { font-size:1.1rem; font-weight:800; color:var(--green); margin-bottom:4px; }
+.vocab-hero-sub   { font-size:0.83rem; color:#555; line-height:1.5; }
+.vocab-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; }
+.vocab-card { background:white; border-radius:12px; padding:14px 16px; border-left:4px solid var(--light-green); box-shadow:0 1px 6px rgba(0,0,0,0.07); }
+.vocab-card-word { font-size:0.95rem; font-weight:700; color:var(--green); margin-bottom:5px; }
+.vocab-card-def  { font-size:0.82rem; color:#444; line-height:1.55; }
+.vocab-card-eg   { font-size:0.75rem; color:#888; margin-top:5px; font-style:italic; }
+
+/* ── COLLAGE BUTTON ── */
+.collage-btn { background:linear-gradient(135deg,#f97316,#ef4444); color:white; border:none; border-radius:16px; padding:7px 16px; font-size:0.8rem; font-weight:600; cursor:pointer; display:none; align-items:center; gap:6px; transition:opacity 0.2s; box-shadow:0 3px 10px rgba(239,68,68,0.3); }
+.collage-btn:hover { opacity:0.88; }
+.collage-btn.submitted { background:#6b7280; cursor:default; box-shadow:none; }
+.collage-btn-row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:8px; }
+
+/* ── TYPING ── */
+.typing { display: flex; gap: 4px; padding: 6px 4px; }
+.typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--light-green); animation: bounce 1.2s infinite ease-in-out; }
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-8px)} }
+
+/* ── PRINT ── */
+@media print {
+  .tabs, header, .sidebar, .chat-wrap, #intro-page { display: none !important; }
+  .invent-panel { display: block !important; overflow: visible !important; padding: 0 !important; }
+  .profile-card { box-shadow: none !important; }
+  .gen-btn, .print-btn, .invent-hero, .inv-step { display: none !important; }
+  .profile-card.show { display: block !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════
+     INTRO PAGE
+════════════════════════════════════════════ -->
+<div id="intro-page">
+  <div class="intro-card">
+    <div class="intro-logo">🌿</div>
+    <div class="intro-title">Unusual Plants Explorer</div>
+    <div class="intro-sub">An AI Learning Companion · Primary 3 Science</div>
+
+    <div class="lesson-cards">
+      <div class="lesson-card">
+        <h3>📖 Lesson 1</h3>
+        <p>Read and explore! Ask the Plant Bot questions to discover <strong>describing words</strong>, <strong>new vocabulary</strong>, and amazing details about 6 unusual plants. Record what you find in your reading journal.</p>
+      </div>
+      <div class="lesson-card l2">
+        <h3>✏️ Lesson 2</h3>
+        <p>Write! Design your own unusual plant and <strong>describe it</strong> using the new vocabulary and descriptive language you have learned. Bring your imaginary plant to life!</p>
+      </div>
+    </div>
+
+    <div class="intro-form">
+      <label for="intro-name">👤 Your Full Name</label>
+      <input type="text" id="intro-name" placeholder="e.g. Priya Sharma" maxlength="40" autocomplete="name">
+
+      <label for="intro-class">🏫 Your Class</label>
+      <select id="intro-class">
+        <option value="">— Select your class —</option>
+        <option>3 Armstrong</option>
+        <option>3 Bly</option>
+        <option>3 Columbus</option>
+        <option>3 Dias</option>
+        <option>3 Everest</option>
+        <option>3 Franklin</option>
+      </select>
+
+      <div class="intro-error" id="intro-error">⚠️ Please enter your name and select your class before continuing.</div>
+      <button class="intro-start-btn" onclick="startApp()">Start Exploring! 🌱</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     MAIN APP
+════════════════════════════════════════════ -->
+<header>
+  <div class="header-info">
+    <div>
+      <h1>🌿 Unusual Plants Explorer</h1>
+      <p>6 of nature's strangest plants</p>
+    </div>
+  </div>
+  <div class="student-badge">
+    👤 <span id="header-student">Explorer</span>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('chat')"   id="tab-chat">💬 Plant Chat</button>
+  <button class="tab"        onclick="switchTab('invent')" id="tab-invent">✏️ Invent a Plant</button>
+  <button class="tab"        onclick="switchTab('vocab')"  id="tab-vocab">📖 Key Words</button>
+</div>
+
+<div class="main">
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-title">🌱 Plant Explorer</div>
+    <div id="plant-cards-container"></div>
+
+  </div>
+
+  <!-- Chat Panel -->
+  <div class="chat-wrap" id="chat-panel">
+    <div class="chat-msgs" id="chat-msgs"></div>
+
+    <div class="prompt-area">
+      <p>💡 <strong>Try asking:</strong></p>
+      <div class="chips" id="chips">
+        <span class="chip" onclick="sendChip(this)">What is the Black Bat Flower?</span>
+        <span class="chip" onclick="sendChip(this)">Why does the Carrion Flower smell?</span>
+        <span class="chip" onclick="sendChip(this)">Is the Doll's Eye dangerous?</span>
+        <span class="chip" onclick="sendChip(this)">List all habitats</span>
+        <span class="chip" onclick="sendChip(this)">Which plant is the most dangerous?</span>
+        <span class="chip" onclick="sendChip(this)">Summarise all 6 plants</span>
+        <span class="chip" onclick="sendChip(this)">What do all plants have in common?</span>
+      </div>
+    </div>
+
+    <div class="input-bar">
+      <input type="text" id="userInput" placeholder="Ask me anything about unusual plants… 🌿">
+      <button class="send-btn" onclick="sendMsg()" title="Send">➤</button>
+    </div>
+    <div class="chat-actions">
+      <button class="copy-chat-btn" id="copy-chat-btn" onclick="copyChatHistory()">📋 Copy Chat History</button>
+      <button class="copy-chat-btn" onclick="downloadChatHistory()">💾 Download Chat</button>
+    </div>
+  </div>
+
+  <!-- Vocab Panel -->
+  <div class="vocab-panel" id="vocab-panel">
+    <div class="vocab-hero">
+      <div class="vocab-hero-title">📖 Key Words</div>
+      <div class="vocab-hero-sub">Important vocabulary for this lesson — collect these words in your reading journal!</div>
+    </div>
+    <div id="vocab-grid" class="vocab-grid"></div>
+  </div>
+
+  <!-- Invent Panel -->
+  <div class="invent-panel" id="invent-panel">
+    <div class="invent-hero">
+      <h2>🧪 Design Your Own Unusual Plant!</h2>
+      <p>Use what you learned from the Plant Chat to create a <strong>brand-new plant</strong>. Mix traits from real plants, or invent something completely new. Think like a botanist — every feature your plant has should help it <em>survive</em>!</p>
+    </div>
+
+    <div class="inv-step">
+      <span class="step-badge">1</span><h3>Name Your Plant</h3>
+      <p class="hint">Give it a common name AND a made-up scientific name (e.g. "Crystal Snapper" / Snappus crystalii)</p>
+      <input type="text" id="inv-name" placeholder="Common name (e.g. Fire Pitcher)">
+      <input type="text" id="inv-sci"  placeholder="Scientific name (e.g. Pitcherus ignitus)">
+    </div>
+
+    <div class="inv-step">
+      <span class="step-badge">2</span><h3>What does it look like?</h3>
+      <p class="hint">Describe colour, shape, size, texture. Does it disguise itself as something else?</p>
+      <textarea id="inv-look" placeholder="My plant looks like…"></textarea>
+    </div>
+
+    <div class="inv-step">
+      <span class="step-badge">3</span><h3>Where does it live?</h3>
+      <p class="hint">Habitat — desert, tropical rainforest, deep ocean, volcanic rock, frozen tundra…?</p>
+      <input type="text" id="inv-habitat" placeholder="It lives in…">
+    </div>
+
+    <div class="inv-step">
+      <span class="step-badge">4</span><h3>Special Adaptation / Superpower</h3>
+      <p class="hint">Pick traits from real plants below, then describe your plant's unique twist!</p>
+      <div class="trait-grid" id="trait-grid">
+        <span class="trait" onclick="toggleTrait(this)">Catches insects 🪤</span>
+        <span class="trait" onclick="toggleTrait(this)">Smells like rotting meat 💀</span>
+        <span class="trait" onclick="toggleTrait(this)">Looks like a rock 🪨</span>
+        <span class="trait" onclick="toggleTrait(this)">Rainbow-coloured bark 🌈</span>
+        <span class="trait" onclick="toggleTrait(this)">Umbrella-shaped canopy ☂️</span>
+        <span class="trait" onclick="toggleTrait(this)">Lives 1,000+ years 👴</span>
+        <span class="trait" onclick="toggleTrait(this)">Red sap like blood 🩸</span>
+        <span class="trait" onclick="toggleTrait(this)">Sticky death-trap leaves ✨</span>
+        <span class="trait" onclick="toggleTrait(this)">Drowns prey in liquid 🫙</span>
+        <span class="trait" onclick="toggleTrait(this)">Only 2 leaves ever 🍃</span>
+        <span class="trait" onclick="toggleTrait(this)">Glows in the dark 🌟</span>
+        <span class="trait" onclick="toggleTrait(this)">Shoots exploding seeds 💥</span>
+        <span class="trait" onclick="toggleTrait(this)">Moves towards prey 🏃</span>
+        <span class="trait" onclick="toggleTrait(this)">Absorbs fog through leaves 🌫️</span>
+      </div>
+      <textarea id="inv-power" placeholder="My plant's special superpower is… (describe how it works and why it helps the plant survive)"></textarea>
+    </div>
+
+    <div class="inv-step">
+      <span class="step-badge">5</span><h3>How does it get energy or food?</h3>
+      <p class="hint">Sunlight? Insects? Something unusual? How does the habitat affect what it eats?</p>
+      <input type="text" id="inv-food" placeholder="It gets its energy by…">
+    </div>
+
+    <div class="inv-step">
+      <span class="step-badge">6</span><h3>One Amazing Fun Fact</h3>
+      <p class="hint">What would make a botanist gasp? Something surprising about your plant!</p>
+      <input type="text" id="inv-fact" placeholder="Did you know that…">
+    </div>
+
+    <button class="gen-btn" onclick="generateCard()">✨ Generate My Plant Profile Card!</button>
+
+    <div class="profile-card" id="profile-card">
+      <div class="big-emoji" id="pc-emoji">🌿</div>
+      <h2 id="pc-name"></h2>
+      <div class="sci" id="pc-sci"></div>
+      <div class="profile-row"><span class="p-label">Appearance</span><span class="p-val" id="pc-look"></span></div>
+      <div class="profile-row"><span class="p-label">Habitat</span><span class="p-val" id="pc-habitat"></span></div>
+      <div class="profile-row"><span class="p-label">Special Power</span><span class="p-val" id="pc-power"></span></div>
+      <div class="profile-row"><span class="p-label">Diet / Energy</span><span class="p-val" id="pc-food"></span></div>
+      <div class="profile-row"><span class="p-label">Fun Fact</span><span class="p-val" id="pc-fact"></span></div>
+      <div class="sci-notes"><b>🔬 Botanist's Notes:</b> <span id="pc-notes"></span></div>
+      <div style="margin-top:12px;font-size:0.78rem;color:#888;">Created by: <span id="pc-creator"></span></div>
+
+      <div class="ai-img-section">
+        <h4>🎨 Generate an AI Picture of Your Plant</h4>
+        <p>Click the button below and AI will draw what your plant might look like — based on your description! (Requires internet)</p>
+        <button class="ai-gen-btn" id="ai-gen-btn" onclick="generateAIImage()">
+          <span>✨</span> Generate AI Image
+        </button>
+        <div class="ai-img-frame" id="ai-img-frame">
+          <div class="ai-loading" id="ai-loading">
+            <div class="ai-spinner"></div>
+            <p>Creating your plant… about 10–15 seconds!</p>
+          </div>
+          <img id="ai-plant-img" src="" alt="AI generated plant" style="display:none">
+        </div>
+        <div id="ai-img-caption" class="ai-img-caption" style="display:none"></div>
+        <div class="collage-btn-row">
+          <button class="regen-btn"   id="regen-btn"   onclick="generateAIImage()" style="display:none">🔄 New version</button>
+          <button class="collage-btn" id="collage-btn"  onclick="submitToCollage()">🖼️ Add to Class Collage</button>
+        </div>
+      </div>
+
+      <button class="print-btn" onclick="window.print()" style="margin-top:14px">🖨️ Print My Plant Card</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ╔══════════════════════════════════════════╗
+// ║          PLANT KNOWLEDGE BASE            ║
+// ╚══════════════════════════════════════════╝
+const KB = {
+  carrion: {
+    id:'carrion', name:'Carrion Flower', sci:'Stapelia grandiflora', emoji:'⭐',
+    img:'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Aasblume%2C_Stapelia_grandiflora.JPG/600px-Aasblume%2C_Stapelia_grandiflora.JPG',
+    tag:'A starfish that smells like a dead animal!',
+    desc:'The Carrion Flower looks like a beautiful purple-brown starfish, with thick textured petals covered in fine hairs. But get close and you will notice something shocking — it <strong>smells exactly like rotting meat</strong>! This smell is completely intentional.',
+    habitat:'It grows in the <strong>rocky, dry regions of southern Africa</strong>, particularly South Africa. It is a succulent, so it survives in hot, dry places with very little water.',
+    adapt:'The rotten-meat smell attracts <strong>blowflies and carrion flies</strong> that normally lay their eggs in dead animals. The flies visit the flower thinking it is a carcass, pick up pollen, and carry it to the next flower — pollinating it without the plant needing to offer any nectar or food reward. It is a <em>trick</em>!',
+    diet:'Like most plants, it photosynthesises using sunlight. Its thick fleshy stems store water, so it needs very little rainfall to survive.',
+    funfact:'Flies are so completely fooled by the smell that they actually <strong>lay their eggs inside the flower</strong>. The maggots hatch — but find nothing to eat and die. The plant gets pollinated and gives nothing back!',
+    size:'Each flower is <strong>7–14 cm across</strong> — roughly the size of your hand. The plant itself is a low-growing succulent about 20–30 cm tall.',
+    wow:'The Carrion Flower has no petals that could be called "pretty" from a human perspective — but to a fly, it is the most irresistible thing in the world!',
+    danger:'Not toxic to humans, though the smell can be overpowering up close! The plant is completely safe to touch.',
+    keys:['carrion flower','stapelia','starfish flower','starfish cactus','smelly flower','carrion plant'],
+    traits:['smells like rotting meat','tricks flies with fake carcass smell','hairy star-shaped petals','succulent — stores water in thick stems','grows in rocky dry Africa']
+  },
+  bunny: {
+    id:'bunny', name:'Bunny Ears Cactus', sci:'Opuntia microdasys', emoji:'🐰',
+    img:'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Opuntia_microdasys_3.jpg/600px-Opuntia_microdasys_3.jpg',
+    tag:'Do NOT touch — it is sneakier than it looks!',
+    desc:'The Bunny Ears Cactus looks adorable — two round, flat green pads that look just like bunny ears. But instead of spines, the pads are covered in thousands of tiny <strong>glochids</strong> (barbed hair-like bristles) that look harmless but are extremely nasty. They detach on the lightest touch and are almost impossible to remove from skin.',
+    habitat:'It grows naturally in <strong>central and northern Mexico</strong>, in hot, dry desert and scrubland. It is one of the most popular cacti in the world as a houseplant.',
+    adapt:'The flat pads store water and photosynthesise. The glochids act as a <strong>brilliant defence system</strong> — they look like soft fuzzy dots (white or yellow) but each has tiny backward-pointing barbs. Touch them and hundreds embed in your skin, causing irritation for days.',
+    diet:'Pure sunlight and very occasional water. It can survive months without rainfall using the water stored in its thick pads. The pads also act as leaves for photosynthesis.',
+    funfact:'The glochids (bristles) on a Bunny Ears Cactus are <strong>barbed like fish hooks</strong> and can only be removed with tweezers and tape. Touching a pad and then touching your eye can cause serious injury!',
+    size:'Each pad is <strong>6–15 cm long</strong>. The whole plant grows as a dense shrub up to <strong>40–60 cm tall</strong>.',
+    wow:'Despite looking like the friendliest cactus imaginable, the Bunny Ears is considered one of the most dangerous common houseplants because people cannot resist touching those fluffy-looking dots!',
+    danger:'Moderately dangerous! The glochids are very difficult to remove and cause intense skin irritation. Keep away from eyes.',
+    keys:['bunny ears','bunny ears cactus','opuntia microdasys','polka dot cactus','bunny cactus','rabbit cactus','angel wings'],
+    traits:['covered in barbed glochids instead of spines','pads look like bunny ears','stores water in flat pads','glochids are almost impossible to remove','native to Mexico']
+  },
+  blackbat: {
+    id:'blackbat', name:'Black Bat Flower', sci:'Tacca chantrieri', emoji:'🦇',
+    img:'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Bat_Flower_or_Cat_Whiskers_%28Tacca_Chantrieri%29_%2849532732922%29.jpg/600px-Bat_Flower_or_Cat_Whiskers_%28Tacca_Chantrieri%29_%2849532732922%29.jpg',
+    tag:'The most dramatic flower in the world!',
+    desc:'The Black Bat Flower is one of the most extraordinary-looking plants on Earth. It produces jet-black flowers (almost unheard of in the plant kingdom) with two large wing-like bracts that look like bat wings, and long dangling <strong>"whiskers" (filaments)</strong> that can reach up to <strong>70 cm long</strong>. It genuinely looks like something from a fantasy novel.',
+    habitat:'It grows in the <strong>tropical rainforests of Southeast Asia</strong> — Thailand, Malaysia, southern China, and nearby regions. It thrives in warm, humid, shaded conditions under the forest canopy. It can be found in Singapore\'s Botanic Gardens.',
+    adapt:'The dramatic black colour and long whiskers may help <strong>attract specific insects</strong> for pollination in the dark forest understorey where there is little light. The black colour absorbs heat, which may help with pollination. Scientists are still researching its exact pollination strategy.',
+    diet:'It photosynthesises using its large dark green leaves, which are adapted to capture light even in shaded forest conditions.',
+    funfact:'True black is <strong>extremely rare in the plant kingdom</strong> — most "black" flowers are actually very dark purple or maroon. The Black Bat Flower is one of the few plants that produces flowers that are genuinely near-black.',
+    size:'The flower structure can reach <strong>30 cm across</strong>, and the whiskers can hang <strong>up to 70 cm below the flower</strong>. The plant itself grows 60–90 cm tall.',
+    wow:'The Black Bat Flower is related to the yam (the vegetable you might eat)! Both belong to the Dioscoreaceae family — proof that close relatives can look incredibly different.',
+    danger:'The plant is not considered toxic, but the sap can cause skin irritation. Generally safe to observe.',
+    keys:['black bat flower','tacca chantrieri','bat flower','bat plant','cat whiskers','black flower','tacca'],
+    traits:['jet-black flowers (extremely rare in plants)','whiskers up to 70 cm long','wing-like black bracts','grows in Southeast Asian rainforest','related to the yam vegetable']
+  },
+  corpse: {
+    id:'corpse', name:'Corpse Flower', sci:'Amorphophallus titanum', emoji:'💀',
+    img:'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Amorphophallus_titanum_%28corpse_flower%29_-_2.jpg/600px-Amorphophallus_titanum_%28corpse_flower%29_-_2.jpg',
+    tag:'The world\'s largest and smelliest flower!',
+    desc:'The Corpse Flower is famous for two record-breaking facts: it has the <strong>world\'s largest unbranched flower structure</strong> (up to 3 metres tall), and it produces one of the most disgusting smells on Earth — like rotting meat, dirty socks, and rubbish bins all mixed together. It only blooms for <strong>24–48 hours at a time</strong>.',
+    habitat:'It grows in the <strong>tropical rainforests of Sumatra, Indonesia</strong>. Botanic gardens around the world grow it too — including the <strong>Singapore Botanic Gardens</strong>!',
+    adapt:'The terrible smell attracts <strong>carrion beetles and flies</strong> that normally live on dead animals. The flower even <em>heats up to about 37°C</em> (human body temperature!) to spread the scent further through the forest. It is all a trick — the insects get no food, but carry pollen between flowers.',
+    diet:'It stores energy in a <strong>massive underground tuber</strong> (like a giant potato) that can weigh over 90 kg — the heaviest ever recorded was 153 kg! It spends years building this up before using the energy to power the enormous flower.',
+    funfact:'The Corpse Flower can spend <strong>7–10 years growing underground</strong> before it ever blooms for the first time. When it finally flowers, people queue for hours just to experience the terrible smell!',
+    size:'The flower can reach <strong>3 metres tall</strong>. The underground tuber can weigh <strong>90+ kg</strong>.',
+    wow:'When the Singapore Botanic Gardens\' corpse flower bloomed, thousands of visitors queued just to smell it. Some said it smelled like a rubbish dump mixed with stinky cheese!',
+    danger:'Not toxic to humans, though the smell can cause nausea. Completely safe to be near.',
+    keys:['corpse flower','amorphophallus','smelly flower','stinky plant','dead flower','smelliest','corpse','titanum','giant flower','titan arum'],
+    traits:['smells like rotting meat','world\'s largest unbranched flower (3m tall)','heats up to 37°C to spread scent','blooms for only 24–48 hours','stores energy in 90kg underground tuber']
+  },
+  dollseye: {
+    id:'dollseye', name:"Doll's Eye", sci:'Actaea pachypoda', emoji:'👁️',
+    img:'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Actaea_pachypoda_%281%29.jpg/600px-Actaea_pachypoda_%281%29.jpg',
+    tag:'Beautiful, creepy — and deadly poisonous!',
+    desc:"Doll's Eye is named after the shiny white berries it produces, each with a <strong>black dot</strong> in the centre — looking exactly like the china eyes used in old-fashioned dolls. They grow on bright red stems, making them look almost unreal. They are genuinely one of the most striking and unsettling-looking plants in nature.",
+    habitat:"It grows in the <strong>woodland forests of eastern North America</strong> — from eastern Canada down through the eastern USA. It likes shaded, moist forest floors.",
+    adapt:"The bright red stems and white berries are thought to <strong>attract birds</strong>, which eat the berries and spread the seeds. The plant relies on the fact that the berries are NOT toxic to birds — only to mammals (including humans).",
+    diet:"It photosynthesises normally. Its large leaves are adapted to capture dappled light on the shaded forest floor.",
+    funfact:"Every part of the Doll's Eye plant is <strong>toxic to humans</strong>. The berries contain cardiac glycosides that slow the heart and can cause cardiac arrest. Even just two berries can kill a small child. Yet birds eat them freely without any harm!",
+    size:"The plant grows <strong>40–80 cm tall</strong>. The berries are about <strong>1 cm across</strong> — roughly the size of a marble.",
+    wow:"Doll's Eye is the perfect example of a plant that looks like candy but is actually deadly. The bright red stems and white berries seem designed to be attractive — but only to creatures (birds) that won't be harmed by them.",
+    danger:"HIGHLY TOXIC — do not eat! All parts of the plant are poisonous to humans. The berries can cause cardiac arrest. NEVER taste or eat any plant you find in the wild without expert identification.",
+    keys:["doll's eye","dolls eye","actaea pachypoda","white baneberry","doll eye","baneberry","white berries red stems"],
+    traits:["white berries with black dots look like doll's eyes","bright red stems","highly toxic to humans but safe for birds","grows on shaded forest floors","uses bird seed dispersal"]
+  },
+  bleeding: {
+    id:'bleeding', name:'Bleeding Heart', sci:'Lamprocapnos spectabilis', emoji:'💗',
+    img:'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Dicentra-spectabilis.jpg/600px-Dicentra-spectabilis.jpg',
+    tag:'Nature\'s perfect little hearts!',
+    desc:'The Bleeding Heart produces rows of small, perfectly <strong>heart-shaped pink flowers</strong>, each with a teardrop of white petals dangling from the bottom — like a heart with a droplet of blood. They hang in neat rows along arching stems, creating one of the most magical-looking flowering plants in nature.',
+    habitat:'It is native to <strong>northeast China, Korea, and Siberia</strong>. It was introduced to gardens worldwide and is now beloved in temperate gardens across Europe, North America and Australasia. It grows in cool, shaded woodland conditions.',
+    adapt:'The Bleeding Heart blooms in <strong>spring before the forest trees grow full leaves</strong>, taking advantage of the brief window of bright light on the forest floor. Once summer heat arrives, the plant dies back underground and waits as a dormant root until next spring.',
+    diet:'It photosynthesises in spring when conditions are ideal. Its energy is stored in underground rhizomes through summer and winter, allowing it to re-emerge every year.',
+    funfact:'The heart shape is not just decorative — the whole structure evolved to attract <strong>long-tongued bumblebees</strong> that are the only insects that can reach the nectar hidden inside. Other insects simply cannot get in!',
+    size:'Each heart-shaped flower is only about <strong>2–3 cm long</strong>. The whole plant grows <strong>60–90 cm tall</strong> with gracefully arching stems.',
+    wow:"The Bleeding Heart was introduced to Western gardens in 1846 by plant hunter Robert Fortune, who smuggled it out of China disguised in a sealed glass box. It caused a sensation when it first bloomed in England!",
+    danger:'The whole plant is mildly toxic — it contains alkaloids that can cause skin irritation or nausea if eaten. Not dangerous in normal handling, but wash hands after contact.',
+    keys:['bleeding heart','lamprocapnos','dicentra spectabilis','bleeding heart plant','heart flower','lyre flower'],
+    traits:['perfect heart-shaped pink flowers','white teardrop inner petals','blooms in spring before tree canopy closes','dies back underground in summer','evolved for long-tongued bumblebees only']
+  }
+};
+
+// ╔══════════════════════════════════════════╗
+// ║       CROSS-PLANT QUERY ENGINE           ║
+// ╚══════════════════════════════════════════╝
+function crossPlantRespond(input) {
+  const l = input.toLowerCase();
+
+  if (/\b(list|all|every|each)\b/.test(l) && /\b(habitat|where|live|grow|location|country)\b/.test(l))
+    return { html:`<strong>🗺️ Habitats of all 6 plants:</strong><br><br>`+Object.values(KB).map(p=>`<strong>${p.emoji} ${p.name}</strong><br><span style="font-size:0.83rem">${p.habitat}</span>`).join('<br><br>'),img:null,fact:{lbl:'🔍 NOTICE',txt:"Each plant's strange features are shaped by where it lives. Harsh habitats = extreme adaptations!"} };
+
+  if (/\b(list|all|every|each|compare)\b/.test(l) && /\b(adapt|adaptation|special|superpower|survive|trick|strategy|power)\b/.test(l))
+    return { html:`<strong>⚡ How all 6 plants survive:</strong><br><br>`+Object.values(KB).map(p=>`<strong>${p.emoji} ${p.name}</strong><br><span style="font-size:0.83rem">${p.adapt}</span>`).join('<br><br>'),img:null,fact:{lbl:'🧠 BIG IDEA',txt:"All these plants evolved their weird features because it helped them survive. Nature always has a reason!"} };
+
+  if (/\b(list|all|every|each)\b/.test(l) && /\b(fun fact|funfact|interesting|amazing|did you know|wow)\b/.test(l))
+    return { html:`<strong>🤯 Fun facts about all 6 plants:</strong><br><br>`+Object.values(KB).map(p=>`<strong>${p.emoji} ${p.name}</strong><br><span style="font-size:0.83rem">${p.funfact}</span>`).join('<br><br>'),img:null,fact:null };
+
+  if (/\b(list|all|every|each|compare)\b/.test(l) && /\b(size|tall|big|small|large|height)\b/.test(l))
+    return { html:`<strong>📏 Sizes of all 6 plants:</strong><br><br>`+Object.values(KB).map(p=>`<strong>${p.emoji} ${p.name}</strong><br><span style="font-size:0.83rem">${p.size}</span>`).join('<br><br>'),img:null,fact:null };
+
+  if (/\b(list|all|every|each|compare)\b/.test(l) && /\b(danger|dangerous|toxic|poison|safe|harm)\b/.test(l))
+    return { html:`<strong>⚠️ Danger levels of all 6 plants:</strong><br><br>`+Object.values(KB).map(p=>`<strong>${p.emoji} ${p.name}</strong><br><span style="font-size:0.83rem">${p.danger}</span>`).join('<br><br>'),img:null,fact:{lbl:'⚠️ ALWAYS REMEMBER',txt:'NEVER taste or eat any wild plant without expert identification!'} };
+
+  if (/\b(most dangerous|deadliest|most deadly|most poisonous|most toxic)\b/.test(l))
+    return { html:`<strong>☠️ The most dangerous plant is 👁️ Doll's Eye!</strong><br><br>Its berries contain <strong>cardiac glycosides</strong> that can cause cardiac arrest — even 2 berries can be fatal to a small child. Yet birds eat them freely!<br><br><strong>Danger rankings:</strong><br>👁️ <strong>Doll's Eye</strong> — ☠️☠️☠️ highly toxic<br>🐰 <strong>Bunny Ears Cactus</strong> — ⚠️⚠️ glochids cause serious injury<br>💗 <strong>Bleeding Heart</strong> — ⚠️ mildly toxic<br>⭐ <strong>Carrion Flower</strong> — ✅ safe (just smelly)<br>🦇 <strong>Black Bat Flower</strong> — ✅ mostly safe<br>💀 <strong>Corpse Flower</strong> — ✅ not toxic`,img:null,fact:{lbl:'⚠️ ALWAYS REMEMBER',txt:'NEVER eat any wild plant without expert identification!'} };
+
+  if (/\b(most smelly|smelliest|worst smell|stinkiest|which.*smell)\b/.test(l))
+    return { html:`<strong>👃 The smelliest plant is 💀 Corpse Flower!</strong><br><br>Described as rotting meat + dirty socks + rubbish bins. It even heats to 37°C to spread the smell further!<br><br>💀 <strong>Corpse Flower</strong> — 😱😱😱 world's worst<br>⭐ <strong>Carrion Flower</strong> — 😱😱 rotting meat smell<br>Others — 😐 no notable smell`,img:null,fact:{lbl:'🧠 WHY SMELL?',txt:"Both smelly plants trick flies into pollinating them by smelling like a dead animal!"} };
+
+  if (/\b(biggest|largest|tallest|which is big|which is large|which is tall)\b/.test(l))
+    return { html:`<strong>📏 The biggest plant is 💀 Corpse Flower — up to 3 metres tall!</strong><br><br>💀 Corpse Flower — <strong>3 m tall</strong>, 90+ kg tuber<br>🦇 Black Bat Flower — 60–90 cm, whiskers 70 cm<br>💗 Bleeding Heart — 60–90 cm<br>👁️ Doll's Eye — 40–80 cm<br>🐰 Bunny Ears — 40–60 cm<br>⭐ Carrion Flower — 20–30 cm`,img:null,fact:{lbl:'🤯 WOW',txt:"The Corpse Flower spends up to 10 years underground before flowering!"} };
+
+  if (/\b(in common|common feature|same|similar|all have|share|alike|what.*all|do they all)\b/.test(l))
+    return { html:`<strong>🔍 What all 6 plants have in common:</strong><br><br><strong>1. Every weird feature has a purpose 🎯</strong><br>Nothing is random — the smell, the colours, the shapes — all evolved for a reason.<br><br><strong>2. Many use trickery 🪤</strong><br>Carrion Flower and Corpse Flower trick flies. Bunny Ears and Doll's Eye use disguise.<br><br><strong>3. They attract specific animals 🐝</strong><br>Each plant targets flies, beetles, bumblebees, or birds.<br><br><strong>4. Extreme habitats = extreme plants 🌍</strong><br>Hot desert, dark rainforest, shaded woodland — the habitat shapes the plant.<br><br><strong>5. Looks can be deceiving ⚠️</strong><br>The cutest (Bunny Ears) can hurt you. The ugliest (Corpse Flower) is harmless.`,img:null,fact:{lbl:'💡 BIG IDEA',txt:"Every unusual feature evolved because it helped the plant SURVIVE and REPRODUCE!"} };
+
+  if (/\b(summar|overview|recap|all 6|all six|show all|introduce all|tell me about all)\b/.test(l))
+    return { html:`<strong>🌿 All 6 unusual plants:</strong><br><br>`+Object.values(KB).map(p=>`<strong>${p.emoji} ${p.name}</strong> <em>(${p.sci})</em><br><span style="font-size:0.8rem;color:#555">${p.tag}</span>`).join('<br><br>'),img:null,fact:{lbl:'💡 TIP',txt:'Click any plant card on the left to learn more!'} };
+
+  if (/\b(most interesting|most fascinating|favourite|coolest|most amazing|most unusual)\b/.test(l))
+    return { html:`<strong>🌟 Which plant is most interesting? You decide!</strong><br><br>💀 <strong>Corpse Flower</strong> — 3m flower after 10 years underground, smells like a rubbish dump<br>🦇 <strong>Black Bat Flower</strong> — jet-black, 70cm whiskers, almost impossible colour<br>👁️ <strong>Doll's Eye</strong> — kills humans, safe for birds<br>⭐ <strong>Carrion Flower</strong> — tricks flies, gives them nothing, they keep falling for it<br>🐰 <strong>Bunny Ears</strong> — cutest but most deceptively dangerous<br>💗 <strong>Bleeding Heart</strong> — perfect heart shape for one bumblebee species only<br><br><strong>Which do YOU think is most interesting, and why?</strong> 🤔`,img:null,fact:null };
+
+  if (/\b(pollinat|how do they all|spread seed)\b/.test(l) && /\b(all|each|every|compare)\b/.test(l))
+    return { html:`<strong>🐝 How all 6 plants attract pollinators:</strong><br><br>⭐ <strong>Carrion Flower</strong> — fake rotting meat smell tricks blowflies<br>🐰 <strong>Bunny Ears</strong> — yellow flowers attract bees<br>🦇 <strong>Black Bat Flower</strong> — black colour and whiskers attract rainforest insects<br>💀 <strong>Corpse Flower</strong> — heats to 37°C + rotten smell lures carrion beetles<br>👁️ <strong>Doll's Eye</strong> — red stems + white berries attract birds to spread seeds<br>💗 <strong>Bleeding Heart</strong> — heart shape evolved for long-tongued bumblebees`,img:null,fact:{lbl:'🌍 BIG PATTERN',txt:'The more unusual the pollinator strategy, the more unusual the plant looks!'} };
+
+  // Compare two named plants
+  const plantList = Object.values(KB);
+  const mentioned = plantList.filter(p => p.keys.some(k => input.toLowerCase().includes(k)));
+  if (mentioned.length >= 2 && /\b(compare|vs|versus|difference|different|both|against|which is)\b/.test(input.toLowerCase())) {
+    const [a,b] = mentioned;
+    return { html:`<strong>⚖️ ${a.emoji} ${a.name} vs ${b.emoji} ${b.name}</strong><br><br><strong>Habitat:</strong><br>• ${a.name}: ${a.habitat.replace(/<[^>]+>/g,'')}<br>• ${b.name}: ${b.habitat.replace(/<[^>]+>/g,'')}<br><br><strong>Adaptation:</strong><br>• ${a.name}: ${a.adapt.replace(/<[^>]+>/g,'').slice(0,120)}…<br>• ${b.name}: ${b.adapt.replace(/<[^>]+>/g,'').slice(0,120)}…<br><br><strong>Danger:</strong><br>• ${a.name}: ${a.danger.replace(/<[^>]+>/g,'')}<br>• ${b.name}: ${b.danger.replace(/<[^>]+>/g,'')}`,img:null,fact:{lbl:'🔍 THINK ABOUT IT',txt:`What is the BIGGEST difference between ${a.name} and ${b.name}?`} };
+  }
+
+  if (/\b(carnivorous|eat insect|catch insect|venus flytrap|pitcher plant|sundew)\b/.test(input.toLowerCase()))
+    return { html:`<strong>🪤 Are any of the 6 plants carnivorous?</strong><br><br>None of our 6 plants are carnivorous — they don't digest insects for food.<br><br>But two of them <strong>trick</strong> insects:<br>💀 <strong>Corpse Flower</strong> — lures beetles and flies with rotten smell. No food given.<br>⭐ <strong>Carrion Flower</strong> — tricks blowflies. The flies get nothing but pollen.<br><br>Famous carnivorous plants not in our set: <strong>Venus Flytrap, Pitcher Plant, Sundew</strong>.`,img:null,fact:{lbl:'🧠 DIFFERENCE',txt:'Tricking insects for pollination vs eating insects for food are completely different strategies!'} };
+
+  return null;
+}
+
+// ╔══════════════════════════════════════════╗
+// ║              CHAT ENGINE                 ║
+// ╚══════════════════════════════════════════╝
+let activePlant    = null;
+let msgCount       = 0;
+let selectedTraits = [];
+let chatLog        = [];
+let studentClass   = '';
+let currentAiImageUrl = '';
+
+// ── Progress tracking (H·A·D·F dots per plant) ────────────────────────────
+const plantProgress = {};
+function initProgress() {
+  Object.keys(KB).forEach(id => { plantProgress[id] = {h:false,a:false,d:false,f:false}; });
+}
+function markProgress(plantId, qt) {
+  if (!plantId) return;
+  const map = {habitat:'h',adapt:'a',smell:'a',diet:'d',funfact:'f',show:'f',describe:'f',general:'f',size:'f',danger:'f',color:'f',touch:'a',behaviour:'a',grow:'h',rare:'f',taste:'d',age:'f',feelings:'f',sound:'f',why:'a'};
+  const key = map[qt];
+  if (key && plantProgress[plantId] && !plantProgress[plantId][key]) {
+    plantProgress[plantId][key] = true;
+    const dot = document.getElementById(`pdot-${plantId}-${key}`);
+    if (dot) dot.classList.add('done');
+  }
+}
+
+// ── Vocabulary panel ──────────────────────────────────────────────────────
+const VOCAB = [
+  {word:'Adaptation',    def:'A special feature that helps a living thing survive in its habitat.',      eg:'"The Carrion Flower\'s rotten smell is an adaptation to attract flies."'},
+  {word:'Habitat',       def:'The natural place where a plant or animal lives.',                        eg:'"The Black Bat Flower\'s habitat is the tropical rainforest."'},
+  {word:'Photosynthesis',def:'How plants make food using sunlight, water, and air.',                    eg:'"The Bleeding Heart uses photosynthesis to make food in spring."'},
+  {word:'Pollination',   def:'Moving pollen between flowers so plants can produce seeds.',              eg:'"The Carrion Flower relies on flies for pollination."'},
+  {word:'Succulent',     def:'A plant that stores water in thick, fleshy leaves or stems.',             eg:'"The Bunny Ears Cactus is a succulent that stores water in its pads."'},
+  {word:'Toxic',         def:'Poisonous — harmful or deadly if eaten or touched.',                      eg:'"The Doll\'s Eye berries are highly toxic to humans."'},
+  {word:'Dormant',       def:'When a plant rests (like a deep sleep) to survive harsh conditions.',     eg:'"The Bleeding Heart becomes dormant underground every summer."'},
+  {word:'Filament',      def:'A very thin, thread-like structure — like the whiskers of the Bat Flower.',eg:'"The Black Bat Flower\'s filaments can grow 70 cm long."'},
+  {word:'Perennial',     def:'A plant that lives for more than two years and returns every season.',    eg:'"The Bleeding Heart is a perennial — it comes back every spring."'},
+  {word:'Tuber',         def:'A swollen underground stem that stores food energy (like a potato).',     eg:'"The Corpse Flower stores energy in a massive tuber underground."'},
+  {word:'Glochid',       def:'A tiny barbed bristle on a cactus — much more dangerous than a spine!', eg:'"The Bunny Ears Cactus is covered in glochids that are hard to remove."'},
+  {word:'Deceptive',     def:'Something that misleads or tricks you — not what it appears to be.',     eg:'"The Bunny Ears Cactus is deceptive — it looks harmless but can hurt you."'},
+];
+function buildVocab() {
+  document.getElementById('vocab-grid').innerHTML = VOCAB.map(v =>
+    `<div class="vocab-card">
+      <div class="vocab-card-word">${v.word}</div>
+      <div class="vocab-card-def">${v.def}</div>
+      <div class="vocab-card-eg">${v.eg}</div>
+    </div>`
+  ).join('');
+}
+function toggleVocab() {} // kept for compatibility
+
+// ── Teacher Dashboard Config ──────────────────────────────────────────────
+const TEACHER_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbySiRWwfenGhlzeZVzTwUkuqvPkrnBqYKaL2nIcVsqCVO4pK4Wb_egFM053lfweZNSr/exec';
+const AUTO_SAVE_EVERY = 3;
+// ─────────────────────────────────────────────────────────────────────────
+
+function name() { return document.getElementById('header-student').textContent || 'Explorer'; }
+
+function startApp() {
+  const n  = document.getElementById('intro-name').value.trim();
+  const cl = document.getElementById('intro-class').value;
+  const err = document.getElementById('intro-error');
+  if (!n || !cl) { err.style.display = 'block'; return; }
+  err.style.display = 'none';
+  studentClass = cl;
+  document.getElementById('header-student').textContent = n + ' · ' + cl;
+  document.getElementById('intro-page').style.display = 'none';
+  // Personalise welcome
+  document.getElementById('chat-msgs').innerHTML = '';
+  appendBot({
+    html:`👋 Hello, <strong>${n}</strong>! Welcome to Unusual Plants Explorer! 🌿<br><br>I know everything about <strong>6 of the world's strangest plants</strong>. Here's how to get started:<br><br>👈 <strong>Click any plant card on the left</strong> to choose a plant, then ask me questions!<br><br>Try asking things like:<br>• <em>"What does the Corpse Flower look like?"</em><br>• <em>"Why does the Carrion Flower smell?"</em><br>• <em>"Can I touch the Bunny Ears Cactus?"</em><br>• <em>"What colour is the Black Bat Flower?"</em><br><br>📝 Look out for <strong>interesting describing words</strong> in my answers — collect them in your reading journal!`,
+    img:null,
+    fact:{lbl:'💡 LESSON 1 — VOCABULARY HUNT',txt:'For each plant: Find 3 describing words (adjectives). Find 1 new vocabulary word. Write a sentence using one of them!'}
+  });
+}
+
+function detectPlant(s) {
+  const l = s.toLowerCase();
+  for (const [,p] of Object.entries(KB)) {
+    if (p.keys.some(k => l.includes(k))) return p;
+  }
+  return null;
+}
+
+function qtype(s) {
+  const l = s.toLowerCase();
+  // ── Specific child-natural questions first ─────────────────────────────
+  if (/can (i|we|you) (eat|taste|chew|swallow)|is it edible|is it food\b/.test(l))         return 'taste';
+  if (/can (i|we|you) (grow|plant|keep|buy|have one|get one)|as a pet\b|at home\b|in (a pot|my garden|singapore)\b/.test(l)) return 'grow';
+  if (/can (i|we|you) touch|is it (soft|rough|smooth|sharp|spiky|prickly|sticky|fluffy|furry|hairy)\b|feel like|texture\b|what does it feel/.test(l)) return 'touch';
+  if (/what colo(u)?r|colo(u)?r(ed|s)?\b|what shade\b|what hue\b/.test(l))                 return 'color';
+  if (/what does it (like to )?do\b|does it move\b|how does it behav|what does.*do (all day|usually|normally)|is it active/.test(l)) return 'behaviour';
+  if (/is it rare\b|how rare\b|how common\b|can you find it easily/.test(l))                return 'rare';
+  if (/how old\b|how long does it live|lifespan\b|how many years\b|does it die\b/.test(l)) return 'age';
+  if (/does it have feelings|can it (feel|think|talk|speak)|is it (alive|conscious)|does it (think|feel|talk|speak)/.test(l)) return 'feelings';
+  if (/does it make (a )?(sound|noise)|can it (talk|speak)\b|is it (loud|quiet)\b|does it (talk|speak)\b|make noise/.test(l)) return 'sound';
+  if (/\bwhy (does it|is it|do they|did it|has it|does the|is the)\b|what is the (reason|purpose) (for|of)\b/.test(l)) return 'why';
+  // ── Original patterns ──────────────────────────────────────────────────
+  if (/\b(where|habitat|live|lives|found|location|country|place|from)\b/.test(l))          return 'habitat';
+  if (/\b(eat|eats|food|diet|hunt|catch|catches|feed|prey|carniv|energy)\b/.test(l))       return 'diet';
+  if (/\b(how big|size|tall|large|small|height|wide|measure)\b/.test(l))                   return 'size';
+  if (/\b(smell|scent|odour|odor|stink|stinks|smelly)\b/.test(l))                          return 'smell';
+  if (/\b(dangerous|danger|hurt|harm|poison|kill|safe|toxic|deadly)\b/.test(l))            return 'danger';
+  if (/\b(fun fact|interesting|wow|amazing|cool|surprising|secret|did you know)\b/.test(l)) return 'funfact';
+  if (/\b(how.*survive|adapt|special|power|trick|strategy|superpower|unusual feature|what makes it unusual)\b/.test(l)) return 'adapt';
+  if (/\b(show|picture|image|photo|look like|what does.*look|see)\b/.test(l))              return 'show';
+  if (/\b(list|all plant|show all|what plant|which plant|every plant)\b/.test(l))          return 'list';
+  if (/\b(what is|what are|tell me|explain|describe|about|introduce)\b/.test(l))           return 'describe';
+  return 'general';
+}
+
+// Directed fallback — always gives students something useful
+function directedFallback(input) {
+  const l = input.toLowerCase();
+
+  // Acknowledgement words — keep them on task
+  if (/^(ok|okay|yes|no|thanks|thank you|cool|nice|wow|great|good|alright|sure|k|haha|lol|omg|yay|interesting|noted|got it|i see|i know|ya|yep|nope|ooh|oh)\s*[.!?]?$/i.test(l)) {
+    if (activePlant) {
+      return { html:`Great! 😊 You're exploring the <strong>${activePlant.emoji} ${activePlant.name}</strong>. Keep going — here are more things you can find out:<br><br>• "Where does the ${activePlant.name} live?"<br>• "How does the ${activePlant.name} survive?"<br>• "What does the ${activePlant.name} eat?"<br>• "Is the ${activePlant.name} dangerous?"<br><br>📝 Don't forget to record the answers on your graphic organiser!`,img:null,fact:null};
+    }
+    return { html:`Great! 😊 To get started, <strong>click a plant card on the left</strong> to choose a plant, then ask me about it!<br><br>Or try: <em>"Summarise all 6 plants"</em> to see them all at once.`,img:null,fact:null};
+  }
+
+  // "I don't know what to ask" type inputs
+  if (/\b(don't know|dont know|not sure|help|what (do|should|can) i ask|stuck|confused|what now|next)\b/.test(l)) {
+    const p = activePlant || Object.values(KB)[0];
+    return { html:`No worries! 😊 Here are some great questions to try for your graphic organiser:<br><br>🗺️ <strong>Habitat:</strong> "Where does the ${p.name} live?"<br>⚡ <strong>Adaptation:</strong> "How does the ${p.name} survive?"<br>🍽️ <strong>Diet:</strong> "What does the ${p.name} eat?"<br>📏 <strong>Size:</strong> "How big is the ${p.name}?"<br>⚠️ <strong>Danger:</strong> "Is the ${p.name} dangerous?"<br>🤯 <strong>Fun Fact:</strong> "Tell me a fun fact about the ${p.name}"`,img:null,fact:{lbl:'💡 REMEMBER',txt:'You need to find these features for each plant: habitat, adaptation, diet, and one fun fact.'} };
+  }
+
+  // Completely off-topic (maths, names, random)
+  if (/\b(\d+\s*[\+\-\*\/]\s*\d+|taylor swift|minecraft|roblox|pokemon|who is your|how old are you|what is your name|are you a robot|are you human|do you have)\b/.test(l)) {
+    return { html:`Ha! I only know about unusual plants 🌿 — that's a bit outside my area!<br><br>Let me help you get back on track. Try asking me:<br>• <em>"What is the Corpse Flower?"</em><br>• <em>"Where does the Black Bat Flower live?"</em><br>• <em>"Which plant is the most dangerous?"</em>`,img:null,fact:null };
+  }
+
+  // Generic — always direct to learning tasks
+  const suggestions = Object.values(KB).slice(0,2);
+  return {
+    html:`Hmm, I'm not quite sure what you're asking! 🤔<br><br>Let me help you stay on your lesson task. For each plant, try to find out:<br><br>🗺️ <strong>Where does it live?</strong> (habitat)<br>⚡ <strong>How does it survive?</strong> (adaptation)<br>🍽️ <strong>What does it eat?</strong> (diet)<br>🤯 <strong>One amazing fun fact</strong><br><br>Try: <em>"Where does the ${suggestions[0].name} live?"</em> or <em>"How does the ${suggestions[1].name} survive?"</em><br><br>Or click a plant card on the left to get started! 👈`,
+    img:null,
+    fact:{lbl:'📋 GRAPHIC ORGANISER REMINDER',txt:'Make sure you fill in all the features for each of the 6 plants on your graphic organiser!'}
+  };
+}
+
+function respond(input) {
+  const l = input.toLowerCase();
+
+  // Cross-plant queries first
+  const crossResult = crossPlantRespond(input);
+  if (crossResult) return crossResult;
+
+  const qt = qtype(input);
+
+  // List all plants
+  if (qt === 'list' || (l.includes('all') && l.includes('plant'))) {
+    return { html:`Here are all <strong>6 unusual plants</strong> I know about! Click any card on the left, or ask me about one:<br><br>`+Object.values(KB).map(x=>`<strong>${x.emoji} ${x.name}</strong> <em>(${x.sci})</em> — ${x.tag}`).join('<br>'),img:null,fact:null };
+  }
+
+  // Greeting
+  if (/^(hi|hello|hey|good morning|good afternoon|howdy|yo)\b/i.test(l)) {
+    return { html:`Hello again, <strong>${name().split('·')[0].trim()}</strong>! 👋<br><br>Ready to learn more about unusual plants? 🌿 Ask me about any of the 6 plants, or try:<br>• <em>"Summarise all 6 plants"</em><br>• <em>"List all habitats"</em><br>• <em>"Which plant is the most dangerous?"</em>`,img:null,fact:{lbl:'💡 LESSON TASK',txt:'Remember to fill in the features of each plant on your graphic organiser!'} };
+  }
+
+  // How to ask good questions
+  if (l.includes('good question') || (l.includes('how') && (l.includes('ask') || l.includes('prompt')))) {
+    return { html:`Great question! 🎯 Here's how to ask well:<br><br><strong>Be specific:</strong><br>• Instead of: <em>"Tell me about plants"</em><br>• Try: <em>"Where does the Corpse Flower live?"</em><br><br><strong>Question starters that work well:</strong><br>• "Where does [plant] live?"<br>• "How does [plant] survive?"<br>• "What does [plant] eat?"<br>• "Is [plant] dangerous?"<br>• "Tell me a fun fact about [plant]"<br><br><strong>Cross-plant questions:</strong><br>• "Which plant is the most dangerous?"<br>• "What do all plants have in common?"<br>• "Compare the Corpse Flower and Carrion Flower"`,img:null,fact:null };
+  }
+
+  // Detect specific plant
+  let p = detectPlant(input);
+  if (!p) {
+    if (activePlant) {
+      p = activePlant; // carry on with the selected plant
+    } else {
+      return directedFallback(input);
+    }
+  }
+
+  activePlant = p;
+  highlightCard(p.id);
+  let html = '', showImg = false, fact = null;
+
+  switch (qt) {
+    case 'habitat':
+      html = `<strong>🗺️ Where does the ${p.name} live?</strong><br><br>${p.habitat}`;
+      fact = {lbl:'✏️ READING JOURNAL',txt:`Write this in your journal: The ${p.name} lives in ${p.habitat.replace(/<[^>]+>/g,'').replace(/It grows in the /,'').split('.')[0]}. Can you find a describing word in that sentence?`};
+      break;
+    case 'diet':
+      html = `<strong>🍽️ How does the ${p.name} get its energy?</strong><br><br>${p.diet}`;
+      fact = {lbl:'✏️ VOCABULARY',txt:`The word "photosynthesis" describes how plants make food from sunlight. Can you break it into two parts? "Photo" means light — what do you think "synthesis" means?`};
+      break;
+    case 'adapt':
+      html = `<strong>⚡ What is the ${p.name}'s special feature?</strong><br><br>${p.adapt}`;
+      fact = {lbl:'✏️ DESCRIBE IT',txt:`Use your own words: How would you describe the ${p.name}'s special feature to someone who has never heard of it? Try writing 1–2 sentences.`};
+      break;
+    case 'size':
+      html = `<strong>📏 How big is the ${p.name}?</strong><br><br>${p.size}`;
+      fact = {lbl:'🤯 WOW!',txt:p.wow};
+      break;
+    case 'funfact':
+      html = `<strong>${p.emoji} Amazing fact about the ${p.name}:</strong><br><br>${p.funfact}`;
+      showImg = true;
+      fact = {lbl:'✏️ YOUR REACTION',txt:`What is the most surprising word in that fact? Write a sentence starting with: "I was surprised to learn that…"`};
+      break;
+    case 'smell':
+      if (p.id === 'corpse' || p.id === 'carrion') {
+        html = `<strong>👃 Why does the ${p.name} smell?</strong><br><br>${p.adapt}<br><br>This is <strong>brilliant plant trickery</strong> — the smell is completely intentional!`;
+        fact = {lbl:'✏️ POWERFUL WORDS',txt:`Words for bad smells: putrid, pungent, rancid, revolting, overpowering, foul. Can you use one of these in a sentence about the ${p.name}?`};
+      } else {
+        html = `The ${p.name} doesn't have a notable smell — but it makes up for it with extraordinary looks!<br><br>${p.desc}`;
+        showImg = true;
+        fact = {lbl:'✏️ DESCRIBING WORDS',txt:`What 3 adjectives would you use to describe the ${p.name}? Write them in your journal.`};
+      }
+      break;
+    case 'danger':
+      html = `<strong>⚠️ Is the ${p.name} dangerous?</strong><br><br>${p.danger}`;
+      fact = {lbl:'✏️ WARNING WRITING',txt:`Imagine writing a warning sign for the ${p.name}. What would it say? Try to write it in 10 words or fewer — be clear and dramatic!`};
+      break;
+    case 'show':
+      html = `<strong>${p.emoji} Here's the ${p.name}!</strong><br><br>${p.desc}`;
+      showImg = true;
+      fact = {lbl:'✏️ ADJECTIVE HUNT',txt:`Read the description above and find 3 adjectives (describing words). Write them in your reading journal!`};
+      break;
+
+    // ── New question types ────────────────────────────────────────────────
+    case 'color':
+      html = `<strong>🎨 What colour is the ${p.name}?</strong><br><br>${p.desc}`;
+      fact = {lbl:'✏️ COLOUR VOCABULARY',txt:`Instead of just "green" or "red", try more precise colour words: crimson, emerald, ivory, jet-black, deep purple, vivid scarlet… Can you write a sentence describing the ${p.name}'s colour more precisely?`};
+      break;
+    case 'touch':
+      if (p.id === 'bunny') {
+        html = `<strong>🤚 Can you touch the ${p.name}?</strong><br><br><strong>No! Do NOT touch it!</strong><br><br>The pads look soft and fuzzy — but they are covered in thousands of tiny <strong>glochids</strong> (barbed bristles, like miniature fish hooks). The moment you touch a pad, hundreds embed in your skin and are almost impossible to remove. They cause itching and pain for days.<br><br>The Bunny Ears Cactus is a perfect example of <strong>"never judge a book by its cover"</strong>!`;
+        fact = {lbl:'✏️ CREATIVE WRITING',txt:`The Bunny Ears Cactus looks cute but is deceptive. Write 1–2 sentences warning a friend not to touch it — try to make it sound dramatic!`};
+      } else if (p.id === 'dollseye') {
+        html = `<strong>🤚 Can you touch the ${p.name}?</strong><br><br>You can touch the leaves and stems, but <strong>NEVER eat any part of it</strong> — especially the berries! Even though they look like round white sweets on red stems, every part of the plant is highly toxic to humans.<br><br>Always wash your hands after touching any unfamiliar plant.`;
+        fact = {lbl:'✏️ CONTRAST WORDS',txt:`The Doll's Eye is beautiful but deadly. Words that show contrast: "although", "however", "despite", "yet", "but". Write a sentence using one of these words about the Doll's Eye.`};
+      } else if (p.id === 'carrion' || p.id === 'corpse') {
+        html = `<strong>🤚 Can you touch the ${p.name}?</strong><br><br>Yes — it is completely safe to touch! The plant is not poisonous at all. The only issue is getting close enough — the <strong>smell</strong> of rotting meat can be quite overpowering!<br><br>${p.id === 'corpse' ? 'When the Corpse Flower blooms at the Singapore Botanic Gardens, visitors queue for hours and can walk right up to it.' : 'Despite the revolting smell, botanists handle it regularly.'}`;
+        fact = {lbl:'✏️ SENSORY WORDS',txt:`This plant affects your sense of SMELL more than touch. Words for smells: pungent, putrid, overpowering, rancid, revolting. Words for textures: waxy, hairy, rough, thick. Write a sentence using one word from each list.`};
+      } else if (p.id === 'bleeding') {
+        html = `<strong>🤚 Can you touch the ${p.name}?</strong><br><br>You can, but be gentle — the flowers feel <strong>delicate and waxy</strong>, almost like little paper hearts. The whole plant contains mild toxins, so always wash your hands after touching it, and never eat any part of it.`;
+        fact = {lbl:'✏️ TEXTURE WORDS',txt:`Adjectives for textures: silky, delicate, waxy, fragile, papery, velvety, smooth. Choose your favourite and write a sentence: "The Bleeding Heart flowers feel _____ to the touch because…"`};
+      } else if (p.id === 'blackbat') {
+        html = `<strong>🤚 Can you touch the ${p.name}?</strong><br><br>Yes, it is generally safe to touch. The flowers are surprisingly <strong>firm and waxy</strong> for something that looks so dramatic. The long dangling whiskers (filaments) feel thin and flexible — almost like thick thread.<br><br>The sap can occasionally cause mild skin irritation, so wash your hands afterwards.`;
+        fact = {lbl:'✏️ SIMILES',txt:`A simile compares two things using "like" or "as". Complete this: "The Black Bat Flower's whiskers feel like ___". Try to think of something surprising!`};
+      } else {
+        html = `<strong>🤚 Can you touch the ${p.name}?</strong><br><br>${p.danger}<br><br>In nature, it is always safest to <strong>look with your eyes and not your hands</strong> — you never know what might live on a plant!`;
+        fact = {lbl:'✏️ IMAGINE IT',txt:`Imagine you could touch the ${p.name}. What do you think it would feel like? Write a sentence starting: "I think it would feel _____ because…"`};
+      }
+      break;
+    case 'behaviour':
+      {
+        const behaviourMap = {
+          carrion: `The Carrion Flower sits quietly in the hot sun for most of its life. But when it blooms, it does something extraordinary — it <strong>releases a powerful rotting-meat smell</strong> to attract blowflies. The flies arrive, thinking they have found a dead animal. They pick up pollen on their bodies and fly off to the next flower — completely tricked! Then the smell fades, and the plant waits silently once more.`,
+          bunny:   `The Bunny Ears Cactus mostly just sits there looking adorable in the blazing desert sun! It slowly grows new "ear" pads over many years and occasionally produces small yellow flowers in spring. Animals and curious humans cannot resist touching it — and that is exactly what spreads its glochids (and seeds)!`,
+          blackbat:`The Black Bat Flower lives quietly in the shaded forest understorey, growing its large dark green leaves to capture dim light. When it blooms, it puts on a dramatic display — jet-black bat-wing bracts and long dangling whiskers — to attract the specific insects it needs for pollination.`,
+          corpse:  `For most of its life, the Corpse Flower is completely hidden underground, slowly building energy in its enormous tuber. Then — after <strong>7–10 years of silence</strong> — it erupts with a 3-metre flower, heats itself to 37°C, and broadcasts its terrible smell for just 24–48 hours. Then it collapses and disappears underground again for years.`,
+          dollseye:`The Doll's Eye grows steadily in the cool, shaded forest floor, spreading its large leaves to catch dappled sunlight. In late summer, it produces those striking white berries on bright red stems. It does nothing dramatic — it simply waits for birds to notice the berries, eat them, and carry its seeds through the forest.`,
+          bleeding:`The Bleeding Heart rushes to life every spring, quickly sending up graceful arching stems covered in rows of heart-shaped flowers before the forest trees grow leaves and block the sunlight. Once summer arrives and the light fades, the whole plant dies back completely — and lies dormant underground as a root until the following spring.`
+        };
+        html = `<strong>🌿 What does the ${p.name} do?</strong><br><br>${behaviourMap[p.id] || p.adapt}`;
+        fact = {lbl:'✏️ STORY STARTER',txt:`Imagine you ARE the ${p.name}. Write 2–3 sentences describing a day in your life. Start with: "I am a ${p.name}. Every day I…"`};
+      }
+      break;
+    case 'grow':
+      {
+        const growMap = {
+          bunny:   `Yes! The Bunny Ears Cactus is one of the world's most popular houseplants. It loves a <strong>sunny windowsill and very little water</strong> — perfect for Singapore's climate. But always handle it with thick gloves or newspaper — <strong>never touch the pads directly!</strong>`,
+          blackbat:`Yes — and it actually thrives in Singapore's warm, humid weather! It needs <strong>shade and humidity</strong>, not direct sun. You can see it at the Singapore Botanic Gardens.`,
+          corpse:  `It is very difficult! The underground tuber can weigh <strong>90+ kg</strong> and needs a huge space, tropical rainforest conditions, and years of patience. Botanic gardens grow them — the <strong>Singapore Botanic Gardens has one!</strong> Not practical for home.`,
+          bleeding:`The Bleeding Heart prefers <strong>cool, temperate climates</strong> (it comes from Korea and China) and would struggle in Singapore's heat. It grows beautifully in cooler countries. You might find it in air-conditioned garden centres!`,
+          dollseye:`Not recommended for homes with young children or pets — <strong>every part is highly toxic</strong>! It also prefers cool woodland conditions far from Singapore's tropical heat. Best admired in botanical gardens.`,
+          carrion: `Yes! Carrion Flower (Stapelia) is a popular succulent — it needs bright sunlight and very little water. The only issue: when it blooms, the smell is <em>extremely</em> unpleasant indoors! Keep it on an outdoor balcony when flowering.`
+        };
+        html = `<strong>🪴 Can you grow the ${p.name}?</strong><br><br>${growMap[p.id] || `The ${p.name} grows in ${p.habitat.replace(/<[^>]+>/g,'').replace('It grows in the ','').split('.')[0]}. ${p.diet}`}`;
+        fact = {lbl:'✏️ GIVING ADVICE',txt:`Imagine a friend wants to grow the ${p.name}. Write 2 sentences advising them — what should they do, and what should they be careful of?`};
+      }
+      break;
+    case 'rare':
+      html = `<strong>🔍 Is the ${p.name} rare?</strong><br><br>${p.funfact}<br><br>${p.wow}`;
+      fact = {lbl:'✏️ SYNONYM HUNT',txt:`The word "rare" means not commonly found. What other words mean something similar? Try: scarce, uncommon, extraordinary, one-of-a-kind, remarkable. Can you use two of them in one sentence about the ${p.name}?`};
+      break;
+    case 'taste':
+      if (p.id === 'dollseye') {
+        html = `<strong>🍽️ Can you eat the ${p.name}?</strong><br><br><strong>Absolutely not!</strong> Every part is highly toxic to humans. The berries look like small round sweets — but they contain substances that can stop your heart. Even 2 berries can seriously harm a small child.<br><br>Interestingly, birds can eat them with no ill effects!`;
+      } else if (p.id === 'bleeding') {
+        html = `<strong>🍽️ Can you eat the ${p.name}?</strong><br><br>No — it is mildly toxic. Eating it can cause nausea and skin problems. It is definitely not food, despite looking beautiful!`;
+      } else if (p.id === 'bunny') {
+        html = `<strong>🍽️ Can you eat the ${p.name}?</strong><br><br>The cactus itself is not toxic, but the glochids (barbed bristles) make it impossible to handle safely without thick protection. Some related Opuntia cacti produce edible fruits ("prickly pears"), but the Bunny Ears variety is grown as an ornamental plant — not food.`;
+      } else {
+        html = `<strong>🍽️ Can you eat the ${p.name}?</strong><br><br>${p.danger}<br><br>As a general rule, <strong>NEVER taste or eat any wild plant</strong> without an adult expert confirming it is safe!`;
+      }
+      fact = {lbl:'⚠️ GOLDEN RULE',txt:'NEVER eat any wild plant, berry, or mushroom without an expert adult confirming it is safe — even plants that look harmless can be deadly!'};
+      break;
+    case 'age':
+      {
+        const ageMap = {
+          corpse:  `The Corpse Flower can live for <strong>40 years or more</strong>, but only flowers a small number of times in its whole life. Each bloom uses up years of stored energy — then the plant must rest for years before it can flower again.`,
+          bleeding:`The Bleeding Heart is a <strong>perennial</strong> — it returns from the same roots every year. A well-cared-for plant can live for <strong>20+ years</strong>, dying back each summer and re-emerging every spring like clockwork.`,
+          carrion: `As a hardy succulent, the Carrion Flower can live for <strong>many years</strong> with very little care. Succulents are famous for their longevity!`,
+          bunny:   `The Bunny Ears Cactus can live for <strong>decades</strong> with minimal care, slowly growing new pads each year. Some specimens in botanical gardens are over 50 years old!`
+        };
+        html = `<strong>⏳ How long does the ${p.name} live?</strong><br><br>${ageMap[p.id] || `The ${p.name} grows in a ${p.habitat.replace(/<[^>]+>/g,'').replace('It grows in the ','').split('.')[0]}, where it can live for many years. ${p.wow}`}`;
+        fact = {lbl:'✏️ NEW VOCABULARY',txt:`"Perennial" = a plant that returns every year. "Annual" = a plant that lives for only one year. "Biennial" = two years. Can you use one of these words in a sentence?`};
+      }
+      break;
+    case 'feelings':
+      html = `<strong>💭 Does the ${p.name} have feelings?</strong><br><br>Plants don't have brains, so they can't feel emotions the way humans do — no happiness, sadness, or pain!<br><br>But they <strong>do respond to their environment</strong> in clever ways:<br>🌞 They grow towards light (<em>phototropism</em>)<br>💧 Their roots grow towards water<br>🌡️ They can "sense" temperature changes to time their blooming<br><br>Some plants even react to touch — the <em>Mimosa pudica</em> (Sensitive Plant) folds its leaves closed in seconds when touched!<br><br>So while the ${p.name} can't feel emotions, it is very much alive and responds to the world around it.`;
+      fact = {lbl:'✏️ INTERESTING WORD',txt:`"Phototropism" = a plant growing towards light. "Photo" means light (as in photograph). "Tropism" means turning towards something. Can you think of another word that starts with "photo"?`};
+      break;
+    case 'sound':
+      html = `<strong>🔊 Does the ${p.name} make any sounds?</strong><br><br>Plants don't have voices or muscles to make sounds on purpose! But some plants in the wild make accidental sounds:<br><br>💥 <strong>Seed pods pop and click</strong> to scatter seeds explosively<br>🌬️ <strong>Leaves rustle</strong> in the wind<br>💧 <strong>Raindrops drum</strong> on large flat leaves<br><br>The ${p.name} itself is completely silent — but its ${p.id === 'carrion' || p.id === 'corpse' ? 'smell' : 'appearance'} does all the "communicating" for it!`;
+      fact = {lbl:'✏️ CREATIVE WRITING',txt:`If the ${p.name} could speak, what do you think it would say? Write 1–2 sentences in the plant's "voice". Make it match the plant's personality!`};
+      break;
+    case 'why':
+      if (/whisker|filament|long string|long thread|tail|hanging/i.test(input) || (p.id === 'blackbat' && /have|grow|got/i.test(input))) {
+        html = `<strong>🦇 Why does the Black Bat Flower have whiskers?</strong><br><br>Those long dangling threads are called <strong>filaments</strong> — they can grow up to <strong>70 cm long</strong> (nearly as long as your arm!).<br><br>Scientists believe they help the plant in the dark forest understorey:<br>🪲 <strong>Attract insects</strong> that navigate by shape and touch in dim light<br>📡 <strong>Guide insects</strong> towards the flower centre for pollination<br><br>The truth is, scientists are still researching the exact purpose — the Black Bat Flower keeps its secrets well!`;
+        fact = {lbl:'✏️ DESCRIBING WORDS',txt:`How would you describe those long filaments? Try: trailing, dangling, wispy, mysterious, thread-like, dramatic, eerie. Use three of these adjectives in one sentence.`};
+      } else if (/smell|scent|stink|odou?r/i.test(input)) {
+        html = `<strong>👃 Why does the ${p.name} smell?</strong><br><br>${p.adapt}`;
+        fact = {lbl:'✏️ POWERFUL VOCABULARY',txt:`Words for bad smells: putrid, pungent, rancid, revolting, overpowering, foul, nauseating. Choose the most dramatic one and use it in a sentence about the ${p.name}.`};
+      } else if (/black|dark/i.test(input) && p.id === 'blackbat') {
+        html = `<strong>🖤 Why is the Black Bat Flower black?</strong><br><br>True black is <strong>extremely rare in the plant kingdom</strong>! Scientists believe the dark colour helps the plant:<br>🌡️ <strong>Absorb heat</strong> to warm the flower and help spread its scent in the cool rainforest understorey<br>🦋 <strong>Attract specific insects</strong> that see colours differently from humans<br><br>It remains one of the great unsolved mysteries of botany!`;
+        fact = {lbl:'✏️ VOCABULARY',txt:`"Extraordinary" means very unusual and surprising. "Mysterious" means hard to explain. Write one sentence about the Black Bat Flower using BOTH words.`};
+      } else if (/red|stem|colour/i.test(input) && p.id === 'dollseye') {
+        html = `<strong>🔴 Why does the Doll's Eye have red stems?</strong><br><br>The bright red stems act like a <strong>signal to attract birds</strong>! Birds can see the colour red clearly, and the vivid red stems with white berries make the plant stand out in the shaded forest.<br><br>Birds eat the berries, then fly away and scatter the seeds in their droppings — helping the plant spread through the forest.`;
+        fact = {lbl:'✏️ PRECISE COLOUR WORDS',txt:`"Bright red" is too simple! Try: vivid scarlet, blood-red, crimson, startling vermilion. Choose your favourite and use it in a sentence about the Doll's Eye.`};
+      } else if (/heart|shape|heart.shape/i.test(input) && p.id === 'bleeding') {
+        html = `<strong>💗 Why is the Bleeding Heart heart-shaped?</strong><br><br>The heart shape is not just for looks — it evolved over thousands of years to perfectly fit the shape of a <strong>long-tongued bumblebee</strong>. Only those specific bees can push inside the flower to reach the nectar hidden within. Shorter-tongued insects can't get in at all!<br><br>So the heart shape is actually a <strong>very precise lock</strong> — and the bumblebee is the only key!`;
+        fact = {lbl:'✏️ METAPHOR',txt:`The passage uses the metaphor of a "lock and key". Can you think of another metaphor for the Bleeding Heart and bumblebee relationship? Write one sentence.`};
+      } else {
+        html = `<strong>💡 Why does the ${p.name} have this unusual feature?</strong><br><br>${p.adapt}`;
+        fact = {lbl:'✏️ IN YOUR OWN WORDS',txt:`Explain in your own words: Why does the ${p.name} have its most unusual feature? Write 1–2 sentences.`};
+      }
+      break;
+
+    default: // 'describe' or 'general' — give full overview
+      html = `<strong>${p.emoji} ${p.name}</strong> <em>(${p.sci})</em><br><em>"${p.tag}"</em><br><br>${p.desc}`;
+      showImg = true;
+      fact = {lbl:'✏️ ADJECTIVE HUNT',txt:`Read the description above and find 3 adjectives (describing words). Try asking: "What colour is it?", "Why does it have that feature?", "Can I touch it?"`};
+  }
+
+  markProgress(p.id, qt);
+  return { html, img: showImg ? p.img : null, imgAlt:`Photo of ${p.name}`, fact };
+}
+
+// ── Messaging ──────────────────────────────────────────────────────────────
+function sendMsg() {
+  const el = document.getElementById('userInput');
+  const txt = el.value.trim();
+  if (!txt) return;
+  el.value = '';
+  appendUser(txt);
+  const typingEl = appendTyping();
+  setTimeout(() => {
+    typingEl.remove();
+    const r = respond(txt);
+    appendBot(r);
+    msgCount++;
+    if (msgCount === 3 && activePlant) refreshChips(activePlant);
+    if (msgCount % AUTO_SAVE_EVERY === 0) autoSaveChat();
+  }, 500 + Math.random()*300);
+}
+function sendChip(el) { document.getElementById('userInput').value = el.textContent; sendMsg(); }
+function appendUser(txt) {
+  const n = name().split('·')[0].trim();
+  const ini = n.charAt(0).toUpperCase() || '?';
+  addMsg(`<div class="avatar user-av">${ini}</div><div class="bubble">${esc(txt)}</div>`,'msg user');
+  chatLog.push({role: n || 'Student', text: txt});
+}
+function appendTyping() {
+  const wrap = document.getElementById('chat-msgs');
+  const d = document.createElement('div');
+  d.className = 'msg';
+  d.innerHTML = `<div class="avatar bot-av">🌿</div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>`;
+  wrap.appendChild(d); wrap.scrollTop = wrap.scrollHeight;
+  return d;
+}
+function appendBot(r) {
+  let imgHtml  = r.img  ? `<img src="${r.img}" alt="${r.imgAlt||''}" class="plant-img" onerror="this.style.display='none'">` : '';
+  let factHtml = r.fact ? `<div class="fact-box"><div class="fact-label">${r.fact.lbl}</div>${esc(r.fact.txt)}</div>` : '';
+  addMsg(`<div class="avatar bot-av">🌿</div><div class="bubble">${r.html}${imgHtml}${factHtml}</div>`,'msg');
+  const plain = r.html.replace(/<[^>]+>/g,'') + (r.fact ? '\n  📌 '+r.fact.lbl+': '+r.fact.txt : '');
+  chatLog.push({role:'PlantBot 🌿', text: plain.trim()});
+}
+function addMsg(inner, cls) {
+  const wrap = document.getElementById('chat-msgs');
+  const d = document.createElement('div');
+  d.className = cls; d.innerHTML = inner;
+  wrap.appendChild(d); wrap.scrollTop = wrap.scrollHeight;
+}
+function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
+
+// ── Auto-Save ──────────────────────────────────────────────────────────────
+function autoSaveChat() {
+  if (!TEACHER_WEBHOOK_URL || !chatLog.length) return;
+  const n = name().split('·')[0].trim();
+  fetch(TEACHER_WEBHOOK_URL, {
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      student:      n || 'Unknown',
+      class:        studentClass || 'Unknown Class',
+      timestamp:    new Date().toISOString(),
+      messageCount: chatLog.length,
+      log:          chatLog
+    })
+  }).catch(()=>{});
+}
+window.addEventListener('beforeunload', () => autoSaveChat());
+
+// ── Chat Export ────────────────────────────────────────────────────────────
+function buildChatText() {
+  if (!chatLog.length) return 'No chat messages yet.';
+  const n    = name().split('·')[0].trim() || 'Student';
+  const date = new Date().toLocaleDateString('en-SG',{day:'numeric',month:'long',year:'numeric'});
+  const header = `Unusual Plants Explorer — Chat History\nStudent: ${n}  |  Class: ${studentClass}  |  Date: ${date}\n${'─'.repeat(55)}\n`;
+  return header + chatLog.map((m,i) => `[${i+1}] ${m.role}:\n${m.text}`).join('\n\n');
+}
+function copyChatHistory() {
+  const text = buildChatText();
+  if (text === 'No chat messages yet.') { alert('Ask the Plant Bot some questions first!'); return; }
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-chat-btn');
+    btn.textContent = '✅ Copied!'; btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='📋 Copy Chat History'; btn.classList.remove('copied'); },2500);
+  }).catch(()=>{
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    alert('Chat history copied!');
+  });
+}
+function downloadChatHistory() {
+  const text = buildChatText();
+  if (text === 'No chat messages yet.') { alert('Ask the Plant Bot some questions first!'); return; }
+  const n = (name().split('·')[0].trim() || 'student').replace(/\s+/g,'_');
+  const blob = new Blob([text],{type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = `PlantChat_${n}.txt`; a.click();
+}
+
+// ── Chips & Cards ──────────────────────────────────────────────────────────
+function refreshChips(p) {
+  document.getElementById('chips').innerHTML = [
+    `How does the ${p.name} survive?`,
+    `What does the ${p.name} eat?`,
+    `Where does the ${p.name} live?`,
+    `How big is the ${p.name}?`,
+    `Is the ${p.name} dangerous?`,
+    `Tell me a fun fact about the ${p.name}`,
+    'List all habitats',
+    'What do all plants have in common?'
+  ].map(q=>`<span class="chip" onclick="sendChip(this)">${q}</span>`).join('');
+}
+function buildCards() {
+  const box = document.getElementById('plant-cards-container');
+  Object.values(KB).forEach(p => {
+    const d = document.createElement('div');
+    d.className = 'plant-card'; d.id = `card-${p.id}`;
+    d.onclick = () => {
+      switchTab('chat');
+      activePlant = p;
+      highlightCard(p.id);
+      refreshChips(p);
+      sendChipText(`Tell me about the ${p.name}`);
+    };
+    d.innerHTML = `
+      <div class="card-img-wrap">
+        <div class="card-placeholder" id="cp-${p.id}">${p.emoji}</div>
+        <img src="${p.img}" alt="${p.name}"
+             onload="this.style.opacity=1;document.getElementById('cp-${p.id}').style.display='none'"
+             onerror="this.style.display='none'">
+      </div>
+      <div class="card-info">
+        <div class="card-name">${p.emoji} ${p.name}</div>
+        <div class="card-tag">${p.tag}</div>
+      </div>
+      <div class="card-progress">
+        <span class="prog-dot" id="pdot-${p.id}-h" title="Habitat explored">H</span>
+        <span class="prog-dot" id="pdot-${p.id}-a" title="Adaptation explored">A</span>
+        <span class="prog-dot" id="pdot-${p.id}-d" title="Diet explored">D</span>
+        <span class="prog-dot" id="pdot-${p.id}-f" title="Fun Fact explored">F</span>
+      </div>`;
+    box.appendChild(d);
+  });
+}
+function highlightCard(id) {
+  document.querySelectorAll('.plant-card').forEach(c => c.classList.remove('active'));
+  const c = document.getElementById(`card-${id}`);
+  if (c) c.classList.add('active');
+}
+function sendChipText(txt) { document.getElementById('userInput').value = txt; sendMsg(); }
+
+// ── Tabs ───────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  ['chat-panel','invent-panel','vocab-panel','sidebar'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  if (tab === 'chat') {
+    document.getElementById('chat-panel').style.display = 'flex';
+    document.getElementById('sidebar').style.display    = 'block';
+    document.getElementById('tab-chat').classList.add('active');
+  } else if (tab === 'invent') {
+    document.getElementById('invent-panel').style.display = 'block';
+    document.getElementById('tab-invent').classList.add('active');
+  } else if (tab === 'vocab') {
+    document.getElementById('vocab-panel').style.display = 'block';
+    document.getElementById('tab-vocab').classList.add('active');
+  }
+}
+
+// ── Invent a Plant ─────────────────────────────────────────────────────────
+function toggleTrait(el) {
+  el.classList.toggle('on');
+  selectedTraits = [...document.querySelectorAll('.trait.on')].map(e => e.textContent);
+}
+function generateCard() {
+  const n   = document.getElementById('inv-name').value.trim()    || 'Mystery Plant';
+  const sci = document.getElementById('inv-sci').value.trim()     || 'Mysterius unknownus';
+  const lk  = document.getElementById('inv-look').value.trim()    || '(appearance not described)';
+  const hab = document.getElementById('inv-habitat').value.trim() || '(habitat not described)';
+  const pw  = document.getElementById('inv-power').value.trim()   || (selectedTraits.length ? selectedTraits.join(', ') : '(no superpower described)');
+  const fd  = document.getElementById('inv-food').value.trim()    || '(diet not described)';
+  const ft  = document.getElementById('inv-fact').value.trim()    || '(fun fact not written)';
+  const ems = ['🌿','🌺','🌸','🍄','🌵','🪸','🌾','🪴','🌱','🍃','🎋','🌼'];
+  document.getElementById('pc-emoji').textContent   = ems[Math.floor(Math.random()*ems.length)];
+  document.getElementById('pc-name').textContent    = n;
+  document.getElementById('pc-sci').textContent     = sci;
+  document.getElementById('pc-look').textContent    = lk;
+  document.getElementById('pc-habitat').textContent = hab;
+  document.getElementById('pc-food').textContent    = fd;
+  document.getElementById('pc-fact').textContent    = ft;
+  document.getElementById('pc-creator').textContent = name().split('·')[0].trim();
+  document.getElementById('pc-power').textContent   = selectedTraits.length ? `${pw}  [Traits: ${selectedTraits.join(' · ')}]` : pw;
+  document.getElementById('pc-notes').textContent   = `The ${n} demonstrates a remarkable evolutionary strategy for surviving in ${hab}. ${selectedTraits.length ? 'Its combination of '+selectedTraits.slice(0,2).join(' and ')+' is particularly noteworthy.' : 'Its unique adaptation makes it compelling for further research.'} Designed by ${name().split('·')[0].trim()}.`;
+  const card = document.getElementById('profile-card');
+  card.classList.add('show');
+  card.scrollIntoView({behavior:'smooth'});
+}
+
+// ── AI Image ───────────────────────────────────────────────────────────────
+function generateAIImage() {
+  const n   = document.getElementById('pc-name').textContent     || 'unusual plant';
+  const lk  = document.getElementById('pc-look').textContent     || '';
+  const hab = document.getElementById('pc-habitat').textContent  || '';
+  const pw  = document.getElementById('pc-power').textContent    || '';
+  const prompt = [
+    `a realistic botanical illustration of a fictional unusual plant called "${n}"`,
+    lk  ? `it looks like: ${lk}`          : '',
+    hab ? `growing in ${hab}`              : '',
+    pw  ? `with the special feature: ${pw}`: '',
+    'detailed botanical art style, vivid colours, white background'
+  ].filter(Boolean).join(', ');
+  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=480&height=360&nologo=true&seed=${Math.floor(Math.random()*999999)}`;
+  currentAiImageUrl = url;
+  const frame=document.getElementById('ai-img-frame'), loading=document.getElementById('ai-loading'),
+        img=document.getElementById('ai-plant-img'),   caption=document.getElementById('ai-img-caption'),
+        regenBtn=document.getElementById('regen-btn'),  genBtn=document.getElementById('ai-gen-btn'),
+        collageBtn=document.getElementById('collage-btn');
+  frame.classList.add('visible');
+  loading.style.display='flex';
+  loading.innerHTML='<div class="ai-spinner"></div><p>Creating your plant… about 10–15 seconds!</p>';
+  img.style.display='none'; caption.style.display='none'; regenBtn.style.display='none';
+  collageBtn.style.display='none'; collageBtn.disabled=false;
+  collageBtn.textContent='🖼️ Add to Class Collage'; collageBtn.classList.remove('submitted');
+  genBtn.disabled=true;
+  // Handlers BEFORE src
+  img.onload = () => {
+    loading.style.display='none'; img.style.display='block';
+    caption.textContent=`AI-generated image of "${n}" · Pollinations.ai · Imaginary plant!`;
+    caption.style.display='block'; regenBtn.style.display='inline-block'; genBtn.disabled=false;
+    collageBtn.style.display='inline-flex';
+  };
+  img.onerror = () => {
+    loading.innerHTML='<p style="color:#c00;padding:20px;text-align:center">Could not generate image.<br>Check your internet connection and try again.</p>';
+    genBtn.disabled=false; regenBtn.style.display='inline-block';
+  };
+  img.src = url;
+}
+
+// ── Collage Submit ─────────────────────────────────────────────────────────
+function submitToCollage() {
+  if (!currentAiImageUrl) return;
+  const plantName = document.getElementById('pc-name').textContent || 'Unknown Plant';
+  const btn = document.getElementById('collage-btn');
+  btn.disabled = true; btn.textContent = '⏳ Submitting…';
+  const sn = name().split('·')[0].trim() || 'Unknown';
+  fetch(TEACHER_WEBHOOK_URL, {
+    method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      action:'collage', student:sn, class:studentClass,
+      plantName:plantName, imageUrl:currentAiImageUrl, timestamp:new Date().toISOString()
+    })
+  }).then(()=>{
+    btn.textContent='✅ Added to Class Collage!'; btn.classList.add('submitted');
+  }).catch(()=>{
+    // no-cors always fires catch — treat as success
+    btn.textContent='✅ Added to Class Collage!'; btn.classList.add('submitted');
+  });
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+function init() {
+  initProgress();
+  buildCards();
+  buildVocab();
+  switchTab('chat');
+  document.getElementById('userInput').addEventListener('keydown', e => { if (e.key==='Enter') sendMsg(); });
+  document.getElementById('intro-name').addEventListener('keydown', e => { if (e.key==='Enter') document.getElementById('intro-class').focus(); });
+}
+window.addEventListener('load', init);
+</script>
+</body>
+</html>
